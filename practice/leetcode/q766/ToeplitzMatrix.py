@@ -39,14 +39,9 @@ class Solution:
         """
         m = len(matrix[0])
         n = len(matrix)
-        print(m)
-        print(n)
         for i in range(0,n-1):
             pre = matrix[i]
             line = matrix[i+1][1:m]
-            print(i)
-            print(pre[:])
-            print(line[:])
             for j in range(0,len(line)):
                 if line[j] != pre[j]:
                     return False
