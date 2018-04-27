@@ -33,6 +33,7 @@ class Solution:
         j = 0
         while True:
             if i > len(nums1)-1 and j > len(nums2)-1:
+            # if len(number) > index + 2: # not require to all numbers
                 break
             if i > len(nums1) - 1:
                 number.extend(nums2[j:])
@@ -54,7 +55,7 @@ class Solution:
 
 if __name__ == '__main__':
     a = [8,9,13,17,19,45,91]
-    b = [1,5,16]
+    b = [1,5,16,18,32]
     s = Solution()
     median = s.findMedianSortedArraysNotLogMN(a,b)
     print(median)
