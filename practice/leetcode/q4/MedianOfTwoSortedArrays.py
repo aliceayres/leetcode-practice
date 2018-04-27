@@ -31,31 +31,43 @@ class Solution:
         number = []
         i = 0
         j = 0
-        while True:
-            if i > len(nums1)-1 and j > len(nums2)-1:
-            # if len(number) > index + 2: # not require to all numbers
-                break
-            if i > len(nums1) - 1:
-                number.extend(nums2[j:])
-                break
-            if j > len(nums2) - 1:
-                number.extend(nums1[i:])
-                break
-            if nums1[i] <= nums2[j]:
-                number.append(nums1[i])
-                i = i + 1
-            else:
-                number.append(nums2[j])
-                j = j + 1
-        print(number[:])
+        if len(nums1) == 0 and len(nums2) == 0: # special situation
+            return 0.0
+        if len(nums1) == 0:
+            number = nums2
+        elif len(nums2) == 0:
+            number = nums1
+        elif nums1[-1] < nums2[0]:  # straightly extend
+            number.extend(nums1)
+            number.extend(nums2)
+        elif nums2[-1] < nums1[0]:
+            number.extend(nums2)
+            number.extend(nums1)
+        else:
+            while True:
+                # if i > len(nums1)-1 and j > len(nums2)-1:
+                if len(number) > index + 2: # not require to all numbers
+                    break
+                if i > len(nums1) - 1:
+                    number.extend(nums2[j:])
+                    break
+                if j > len(nums2) - 1:
+                    number.extend(nums1[i:])
+                    break
+                if nums1[i] <= nums2[j]:
+                    number.append(nums1[i])
+                    i = i + 1
+                else:
+                    number.append(nums2[j])
+                    j = j + 1
         if odd:
             return number[index]/1.0
         else:
             return (number[index]+number[index+1])*1.0/2
 
 if __name__ == '__main__':
-    a = [8,9,13,17,19,45,91]
-    b = [1,5,16,18,32]
+    a = [5,6,7]
+    b = [1,2]
     s = Solution()
-    median = s.findMedianSortedArraysNotLogMN(a,b)
+    median = s.findMedianSortedArraysNotLogMN(b,a)
     print(median)
