@@ -61,40 +61,19 @@ class Solution:
             p = (end + start) // 2
             q = k - p - 2
             if start > end:
-                print('&&&')
                 break;
-            if p > len(search)-1:
-                median = other[q]
-                median2 = other[q + 1]
+            ls = -1 if p < 0 else search[p]
+            lo = -1 if q < 0 else other[q]
+            rs = 1000000 if p >= len(search)-1 else search[p+1]
+            ro = 1000000 if q >= len(other)-1 else other[q+1]
+            if ls <= ro and lo <=rs:
                 break;
-            if q > len(other)-1:
-                median = search[p]
-                median2 = search[p + 1]
-                break;
-            if p+1 > len(search)-1:
-                median = max(search[p], other[q])
-                median2 = other[q + 1]
-                break;
-            if q+1 > len(other)-1:
-                median = max(search[p], other[q])
-                median2 = search[p+1]
-                break;
-            if p < 0:
-                median = other[q]
-                median2 = min(search[p + 1], other[q + 1])
-                break;
-            if q < 0:
-                median = search[p]
-                median2 = min(search[p + 1], other[q + 1])
-                break;
-            if search[p] <= other[q+1] and other[q] <= search[p+1]:
-                median = max(search[p], other[q])
-                median2 = min(search[p + 1], other[q + 1])
-                break;
-            if search[p] > other[q+1]: # left search
+            if ls > ro: # left search
                 end = p -1
-            if other[q] > search[p+1]: # right search
+            if lo > rs: # right search
                 start = p + 1
+        median = max(ls, lo)
+        median2 = min(rs, ro)
         if odd:
             return 2 * median / 2.0
         else:
@@ -147,8 +126,8 @@ class Solution:
             return (number[index]+number[index+1])*1.0/2
 
 if __name__ == '__main__':
-    a = [4,5]
-    b = [1,2,3,6]
+    a = [1,3,4]
+    b = [2]
     s = Solution()
     median = s.findMedianSortedArrays(b,a)
     median2 = s.findMedianSortedArrays(b,a)
