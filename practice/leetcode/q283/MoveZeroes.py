@@ -43,6 +43,21 @@ class Solution:
         for k in range(pos,len(nums)):
             nums[k] = 0
 
+    def moveZerosFaster(self, nums):
+        pos = -1
+        for i in range(len(nums)):
+            if nums[i] == 0:
+                if pos == -1:
+                    pos = i
+            else:
+                if pos == -1:
+                    continue
+                temp = nums[i]
+                nums[i] = nums[pos]
+                nums[pos] = temp
+                pos += 1
+
+
     def moveZerosBySwap(self, nums):
         for i in range(len(nums)):
             if nums[i] ==0:
@@ -56,5 +71,5 @@ class Solution:
 if __name__ == '__main__':
     array = [0,0,4,0,5,0,0,1,3,7,8,0,12]
     s = Solution()
-    s.moveZeroes(array)
+    s.moveZerosFaster(array)
     print(array)
