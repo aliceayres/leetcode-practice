@@ -23,6 +23,13 @@ Merged tree:
 Note: The merging process must start from the root nodes of both trees.
 """
 
+# Definition for a binary tree node.
+class TreeNode(object):
+    def __init__(self, x):
+        self.val = x
+        self.left = None
+        self.right = None
+
 class Solution:
     def mergeTrees(self, t1, t2):
         """
@@ -32,6 +39,8 @@ class Solution:
         """
 
 if __name__ == '__main__':
+    t1 = [1,3,2,5]
+    t2 = [2,1,3,None,4,None,7]
     s = Solution()
     isCircle = s.mergeTrees(t1,t2)
     print(isCircle)
