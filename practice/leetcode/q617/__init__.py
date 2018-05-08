@@ -18,5 +18,6 @@ After running your query, the above salary table should have the following rows:
 
 MySQL
 # Write your MySQL query statement below
+
 update salary set sex = if(sex='f','m','f')
 """

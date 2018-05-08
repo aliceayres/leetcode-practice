@@ -23,5 +23,6 @@ For example, according to the above table, we should output:
 
 MySQL
 # Write your MySQL query statement below
+
 select t.name,t.population,t.area from World t where t.area > 3000000 or t.population > 25000000
 """
