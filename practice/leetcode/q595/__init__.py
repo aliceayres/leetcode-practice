@@ -20,11 +20,8 @@ For example, according to the above table, we should output:
 | Afghanistan  | 25500100    | 652230       |
 | Algeria      | 37100000    | 2381741      |
 +--------------+-------------+--------------+
-Seen this question in a real interview before?  YesNo
 
 MySQL
 # Write your MySQL query statement below
-
 select t.name,t.population,t.area from World t where t.area > 3000000 or t.population > 25000000
-
 """
