@@ -51,9 +51,6 @@ class Solution:
             if current > 100:
                 current = width
                 lines += 1
-            if current == 100:
-                current = 0
-                lines += 1
         return [lines,current]
 
 if __name__ == '__main__':
