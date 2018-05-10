@@ -46,7 +46,7 @@ class Solution:
         current = 0
         for i in range(len(S)):
             ch = S[i]
-            width = widths[ord(ch)-97]
+            width = widths[ord(ch)-ord('a')]
             current += width
             if current > 100:
                 current = width
