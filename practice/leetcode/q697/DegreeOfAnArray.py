@@ -1,0 +1,51 @@
+"""
+697. Degree of an Array
+Given a non-empty array of non-negative integers nums,
+the degree of this array is defined as the maximum frequency of any one of its elements.
+Your task is to find the smallest possible length of a (contiguous) subarray of nums,
+that has the same degree as nums.
+Example 1:
+Input: [1, 2, 2, 3, 1]
+Output: 2
+Explanation:
+The input array has a degree of 2 because both elements 1 and 2 appear twice.
+Of the subarrays that have the same degree:
+[1, 2, 2, 3, 1], [1, 2, 2, 3], [2, 2, 3, 1], [1, 2, 2], [2, 2, 3], [2, 2]
+The shortest length is 2. So return 2.
+Example 2:
+Input: [1,2,2,3,1,4,2]
+Output: 6
+Note:
+nums.length will be between 1 and 50,000.
+nums[i] will be an integer between 0 and 49,999.
+"""
+
+class Solution:
+    def findShortestSubArray(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        cache = {}
+
+        for i in range(len(nums)):
+            if nums[i] not in cache:
+                cache[nums[i]] = [1, i, i]
+            else:
+                cache[nums[i]][0] = cache[nums[i]][0] + 1
+                cache[nums[i]][2] = i
+        max = 0
+        length = 0
+        key = 0
+        for item in cache.items():
+            if item[1][0] > max:
+                max = item[1][0]
+                key = item[0]
+                length = item[1][2] - item[1][1] + 1
+            if item[1][0] == max and item[1][2] - item[1][1] + 1 < length:
+                length = item[1][2] - item[1][1] + 1
+        return length
+
+if __name__ == '__main__':
+    slt = Solution()
+    print(slt.findShortestSubArray([1,2,2,3,1,4,2]))
