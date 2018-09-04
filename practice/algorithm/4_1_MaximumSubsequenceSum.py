@@ -57,5 +57,5 @@ class Solution:
 if __name__ == '__main__':
     slt = Solution()
     numbers = [13,-3,-25,20,-3,-16,-23,-5,-22,15,18,20,-7,12,-4,7]
-    print('# maximum subsequence sum is:')
+    print('# Maximum subsequence sum is:')
     print(slt.maximumSubsequenceSum(numbers))
