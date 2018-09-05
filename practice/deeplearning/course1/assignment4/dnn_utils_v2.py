@@ -1,5 +1,8 @@
 import numpy as np
 
+'''
+dnn activation functions and backward
+'''
 def sigmoid(Z):
     """
     Implements the sigmoid activation in numpy

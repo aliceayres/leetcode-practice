@@ -62,6 +62,10 @@ class Field:
         '''
         self.type = self.type.upper()
         self.type = self.type.replace(' ', '')
+        if self.type.find('，') > -1:
+            self.type = self.type.replace('，', ',')
+        if self.type.find('DECIMAL') > -1:
+            self.type = self.type.replace('DECIMAL', 'BIGINT')
         if self.type.find('CLOB') > -1:
             self.type = self.type.replace('CLOB', 'TEXT')
         if self.type.find('NVARCHAR2') > -1:
@@ -70,12 +74,17 @@ class Field:
             self.type = self.type.replace('VARCHAR2', 'VARCHAR')
         if self.type.find('NUMBER') > -1:
             self.type = self.type.replace('NUMBER', 'NUMERIC')
+            if self.type.find(',0') > -1:
+                self.type = self.type.replace('NUMERIC', 'INT')
+            elif self.type.find(',') > -1:
+                self.type = self.type.replace('NUMERIC', 'NUMERIC')
+            else:
+                self.type = self.type.replace('NUMERIC', 'INT')
+            print(self.type)
         if self.type.find('NUMERIC(138)') > -1:
             self.type = self.type.replace('NUMERIC(138)', 'NUMERIC(65)')
         if self.type.find('DATE') > -1:
             self.type = self.type.replace('DATE', 'DATETIME')
-        if self.type.find('，') > -1:
-            self.type = self.type.replace('，', ',')
 
 class TableTool:
     def tablesToSqlFile(self,root,tables):
@@ -197,15 +206,24 @@ class TableTool:
                         if len(cells) == 0 or (len(cells) > 0 and cell.text != cells[-1]):
                             if len(cells) < 5:
                                 cells.append(cell.text)
+                            if len(cells) == 5 and cell.text != '' and cell.text != cells[-1]:
+                                text = cell.text
+                                text = text.replace("'", '')
+                                text = text.replace('\n', '')
+                                cells.append(text)
                             repeated = {'ID','DNS1','DNS2','CPU'}
                             if table_name != 'IDC_RHS_ORDER_UPDATE_HIS':
                                 if cell.text in repeated and len(cells) == 2:
                                     cells.append(cell.text)
                     if len(cells) == 1:
                         continue
+                    if len(cells) == 5:
+                        cells.append('')
                     print(cells)
                     name = cells[2].upper()
                     comment = cells[1]
+                    if cells[5] != '':
+                        comment += '['+cells[5]+']'
                     type = cells[3].upper()
                     notnull = cells[4] == 'Y'
                     alltypes.setdefault(type)
