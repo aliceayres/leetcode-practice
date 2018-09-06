@@ -1,8 +1,8 @@
 '''
-5. 重建二叉树
+6. 二叉树的下一个结点
 题目描述：
-根据二叉树的前序遍历和中序遍历的结果，重建出该二叉树。假设输入的前序遍历
-和中序遍历的结果中都不含重复的数字。
+给定一个二叉树和其中的一个结点，请找出中序遍历顺序的下一个结点并且返回。
+注意，树中的结点不仅包含左右子结点，同时包含指向父结点的指针。
 '''
 
 class TreeNode:
@@ -24,22 +24,18 @@ class TreeNode:
 
 
 class Solution:
-    def traversingInPreorder(self,root): # DLR
-        order = []
-        stack = []
-        node = root
-        while node is not None:
-            order.append(node.value)
-            if node.right is not None:
-                stack.append(node.right)
-            if node.left is not None:
+    def getInOrderNextNode(self, node):
+        if node.right:
+            node = node.right
+            while node.left:
                 node = node.left
-            else:
-                if len(stack) != 0:
-                    node = stack.pop(-1)
-                else:
-                    node = None
-        return order
+            return node
+        else:
+            parent = node.parent
+            while parent and parent.left != node:
+                node = parent
+                parent = node.parent
+            return parent
 
     def traversionInInOrder(self,root): # LDR
         order = []
@@ -80,13 +76,11 @@ slt = Solution()
 preorder = [1,2,4,5,7,8,3,6,9,10,11]
 inorder = [4,2,5,8,7,1,6,10,9,11,3]
 root = slt.rebuildBinaryTree(preorder,inorder,None)
-print(preorder)
-print(slt.traversingInPreorder(root))
 print(inorder)
 print(slt.traversionInInOrder(root))
+print(root.toString())
+node1 = slt.getInOrderNextNode(root)
+print(node1.toString())
 print(root.left.right.right.toString())
-
-
-
-
-
+node2 = slt.getInOrderNextNode(root.left.right.right)
+print(node2.toString())
