@@ -80,7 +80,6 @@ class Field:
                 self.type = self.type.replace('NUMERIC', 'NUMERIC')
             else:
                 self.type = self.type.replace('NUMERIC', 'INT')
-            print(self.type)
         if self.type.find('NUMERIC(138)') > -1:
             self.type = self.type.replace('NUMERIC(138)', 'NUMERIC(65)')
         if self.type.find('DATE') > -1:
@@ -102,13 +101,23 @@ class TableTool:
         total = ''
         for tb in tables:
             sql = tb.createSql()
-            total += sql +'\n'
             file = open(root + tb.name.lower() + '.sql', 'w', encoding="utf-8")
+            total += sql +'\n'
             file.write(sql)
             file.close()
         total_file = open(root + total_filename, 'w', encoding="utf-8")
         total_file.write(total)
         total_file.close()
+
+    def tablesToCsvFile(self,root,tables):
+        if not os.path.exists(root):
+            os.makedirs(root)
+        total_filename = 'tables.csv'
+        file = open(root + total_filename, 'w', encoding="utf-8")
+        for tb in tables:
+            str = tb.comment + ',' + tb.name + '\n'
+            file.write(str)
+        file.close()
 
     def tablesFromExcel(self,filename):
         '''
@@ -147,7 +156,7 @@ class TableTool:
         all_tables = document.tables
         tables = []
         alltypes = {}
-        for i in range(1, len(all_tables)):
+        for i in range(0, len(all_tables)):
             table = all_tables[i]
             style = 0
             # 判断表格类型
@@ -164,6 +173,8 @@ class TableTool:
                 table_comments = title[0]
                 table_name = title[1]
                 print('表注释-[%s],表名-[%s]' % (table_comments, table_name))
+                if table_name == '接口使用方':
+                    continue
                 fields = []
                 for k in range(2, len(table.rows)):
                     row = table.rows[k]
@@ -240,13 +251,16 @@ class Solution:
         tool = TableTool()
         if filename.find('.xlsx') > -1:
             tables = tool.tablesFromExcel(filename)
-        if filename.find('.docx') > -1:
+        if filename.find('.docx') > -1 or filename.find('.doc') > -1:
             tables = tool.tablesFromDocx(filename)
         tool.tablesToSqlFile(root, tables)
+        tool.tablesToCsvFile(root,tables)
 
     def process(self):
-        root = 'D:\Ayres\idcm_sql\\'
-        filename = 'D:\Ayres\dbo.docx'
+        root = 'D:\Ayres\idcms_sql\\'
+        filename = 'D:\Ayres\idcms.docx'
+        # root = 'D:\Ayres\idcm_sql\\'
+        # filename = 'D:\Ayres\dbo.docx'
         self.sqlFromOfficeFile(root,filename)
 
 slt = Solution()
