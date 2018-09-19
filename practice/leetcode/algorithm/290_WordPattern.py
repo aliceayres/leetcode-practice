@@ -49,6 +49,6 @@ if __name__ == '__main__':
     s2 = 'dog cat cat fish'
     pattern = 'abba'
     slt = Solution()
-    print(slt.wordPattern(pattern,s))
+    print(slt.wordPattern(pattern, s))
     print(slt.wordPattern(pattern, s1))
     print(slt.wordPattern(pattern, s2))
