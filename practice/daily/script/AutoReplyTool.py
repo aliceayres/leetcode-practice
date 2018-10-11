@@ -141,7 +141,11 @@ class AllDutyState(State):
                 reply += '· ' + item[0] + '：' + item[1] + '\n'
             if debug:
                 print("@@@@ Reply message:\n %s" % reply)
+            starttime = datetime.datetime.now()
             itchat.send_msg(reply, msg['FromUserName'])
+            endtime = datetime.datetime.now()
+            if debug:
+                print("@@@@ Send reply cost %s seconds" % str((endtime - starttime)))
 
 # 暂无处理
 class SomeDutyState(State):
@@ -162,9 +166,17 @@ class KeywordContext():
     def replyContent(self):
         return self.state.handle(self)
 
+# 初始化
+def initCaches():
+    if hasModified(global_config_filename):
+        reloadAutoreplyConfig()
+    if hasModified(duty_excel_filename):
+        reloadDutyCache()
+
 # Wechat群聊消息回调, 实现关键字自动回复
 @itchat.msg_register([PICTURE,TEXT], isGroupChat=True)
 def autoReply(msg):
+    starttime = datetime.datetime.now()
     chatroom = msg['User']
     global global_config_filename
     if hasModified(global_config_filename):
@@ -187,6 +199,13 @@ def autoReply(msg):
             #         reply_context.state = SomeDutyState()
             # 实际处理消息
             reply_context.replyContent()
+    endtime = datetime.datetime.now()
+    global debug
+    if debug:
+        print("@@@@ Run cost %s seconds" % str((endtime - starttime)))
+
+# 提前初始化所有缓存
+initCaches()
 
 itchat.auto_login(True)
 itchat.run()
