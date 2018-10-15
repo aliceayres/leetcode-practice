@@ -19,8 +19,8 @@ class ConfigCache():
     def __init__(self):
         self.config_filename = "autoreply_config.ini" # 配置文件名称
         self.file_mtime_cache = {} # 文件上次更新时间缓存
-        self.nickname_whitelist = {} # 触发关键字缓存
-        self.keyword_cache = {} # 机房值班信息表格名称
+        self.nickname_whitelist = {} # 群聊名称白名单
+        self.keyword_cache = {} # 触发关键字缓存
         self.duty_cache = {} # all_duty状态自动回复标题
         self.duty_excel_filename = None # 机房值班信息表格名称
         self.all_duty_title = None # 机房值班信息缓存: 日期 机房 值班人员
@@ -87,7 +87,11 @@ class ConfigCache():
             self.nickname_whitelist[nick] = 0
         # 关键字
         self.keyword_cache = {}
-        self.keyword_cache["all_duty"] = conf.get("state_keyword", "all_duty")
+        all_duty_keyword_config = conf.get("state_keyword", "all_duty")
+        all_duty_keywords = all_duty_keyword_config.split(',')
+        self.keyword_cache["all_duty"] = {}
+        for key in all_duty_keywords:
+            self.keyword_cache["all_duty"][key] = 0
         self.keyword_cache["some_duty"] = conf.get("state_keyword", "some_duty")
         # excel名称
         self.duty_excel_filename = conf.get("duty_excel", "filepath") + conf.get("duty_excel", "filename")
@@ -219,7 +223,7 @@ class WechatHandler():
                 reply_context = KeywordContext(DefaultState(), msg, self)
                 # 根据content内容分发到状态处理
                 # 判断是否属于all_duty状态触发消息
-                if content == self.cache.keyword_cache["all_duty"]:
+                if self.cache.keyword_cache["all_duty"].get(content) is not None:
                     reply_context.state = AllDutyState()
                 # 判断是否属于some_duty状态触发消息
                 # if content.find(keyword_cache["some_duty"]):
@@ -289,7 +293,7 @@ def runScheduler():
     :return:
     '''
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=dailyScheduledBroadcast, trigger='cron', day_of_week='0-6', hour=17, minute=50, second=0)
+    scheduler.add_job(func=dailyScheduledBroadcast, trigger='cron', day_of_week='0-6', hour=9, minute=0, second=0)
     scheduler.start()
     logging.info('@@@@ Background Scheduler started!!!')
 
