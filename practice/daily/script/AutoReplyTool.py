@@ -8,6 +8,7 @@ import xlrd
 from xlrd import xldate_as_tuple
 import os
 import configparser
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # 全局变量
 # 是否打印debug日志
@@ -32,6 +33,14 @@ global all_duty_title
 # 机房值班信息缓存
 global duty_cache
 duty_cache = {} # 日期 机房 值班人员
+
+# 获取群聊唯一标识
+def getChatRoomUserName(nickname):
+    rooms = itchat.get_chatrooms(update=True)[:]
+    for rm in rooms:
+        if rm['NickName'] == nickname:
+            return rm['UserName']
+    return None
 
 # 重新加载机房值班人员缓存
 def reloadDutyCache():
@@ -207,9 +216,28 @@ def autoReply(msg):
     if debug:
         print("@@@@ Run cost %s seconds" % str((endtime - starttime)))
 
+def dailyScheduledBroadcast():
+    print('test schedule')
+    global global_nickname_whitelist
+    for white in global_nickname_whitelist:
+        username = getChatRoomUserName(white)
+        if username is None:
+            continue
+        fmt = "小伙伴们 今日[{current}]天气阴 重度污染 注意防范哦"
+        today = datetime.date.today().strftime('%Y/%m/%d')
+        msg = fmt.format(current=today)
+        itchat.send_msg(msg, username)
+    pass
+
+def loginCallback():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=dailyScheduledBroadcast, trigger='cron', day_of_week='0-6', hour=9, minute=0, second=0)
+    scheduler.start()
+    print('schedule started')
+
 # 提前初始化所有缓存
 initCaches()
-#itchat.auto_login()
-#itchat.auto_login(True)
-itchat.auto_login(enableCmdQR=1)
+#itchat.auto_login(loginCallback=loginCallback)
+itchat.auto_login(True,loginCallback=loginCallback)
+#itchat.auto_login(enableCmdQR=1,loginCallback=loginCallback)
 itchat.run()
