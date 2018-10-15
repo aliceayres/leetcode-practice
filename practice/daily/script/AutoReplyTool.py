@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 import itchat
 from itchat.content import *
 import datetime
@@ -206,6 +209,7 @@ def autoReply(msg):
 
 # 提前初始化所有缓存
 initCaches()
-
-itchat.auto_login(True)
+#itchat.auto_login()
+#itchat.auto_login(True)
+itchat.auto_login(enableCmdQR=1)
 itchat.run()
