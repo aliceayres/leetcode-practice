@@ -9,11 +9,14 @@ from xlrd import xldate_as_tuple
 import os
 import configparser
 from apscheduler.schedulers.background import BackgroundScheduler
+import logging
+
+LOG_FORMAT = '%(asctime)s - %(filename)s[L%(lineno)d] - %(levelname)s: %(message)s'
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 # 配置缓存
 class ConfigCache():
     def __init__(self):
-        self.debug = True # 是否debug
         self.config_filename = "autoreply_config.ini" # 配置文件名称
         self.file_mtime_cache = {} # 文件上次更新时间缓存
         self.nickname_whitelist = {} # 触发关键字缓存
@@ -28,6 +31,7 @@ class ConfigCache():
         初始化
         :return:
         '''
+        logging.info("@@@@ Initializing global caches ...")
         if self.hasModified(self.config_filename):
             self.reloadAutoreplyConfig()
         if self.hasModified(self.duty_excel_filename):
@@ -47,9 +51,8 @@ class ConfigCache():
         else:
             last = self.file_mtime_cache.get(filename)
             modified = modify_time != last
-        if self.debug:
-            if modified:
-                print("#### File[%s] has been modified!!!" % filename)
+        if modified:
+            logging.info("@@@@ File[%s] has been modified!!!" % filename)
         return modified
 
     def lookupConfigCache(self):
@@ -73,8 +76,7 @@ class ConfigCache():
         重新加载配置文件相关缓存
         :return:
         '''
-        if self.debug:
-            print("#### Reloading Autoreply Config cache...")
+        logging.info("@@@@ Reloading Autoreply Config cache...")
         conf = configparser.ConfigParser()
         conf.read(self.config_filename, encoding='UTF-8')
         # 白名单
@@ -97,8 +99,7 @@ class ConfigCache():
         重新加载机房值班人员缓存
         :return:
         '''
-        if self.debug:
-            print("#### Reloading Duty cache...")
+        logging.info("@@@@ Reloading Duty cache...")
         workbook = xlrd.open_workbook(self.duty_excel_filename)
         all_sheets = workbook.sheet_names()
         sheet = workbook.sheet_by_name(all_sheets[0])
@@ -132,10 +133,10 @@ class WechatHandler():
         :param nickname:
         :return:
         '''
-        rooms = itchat.get_chatrooms(update=True)[:]
-        for rm in rooms:
-            if rm['NickName'] == nickname:
-                return rm['UserName']
+        # rooms = itchat.get_chatrooms(update=True)
+        rooms = itchat.search_chatrooms(name=nickname)
+        if rooms is not None and len(rooms) > 0:
+            return rooms[0]['UserName']
         return None
 
     def inWhitelist(self, chatroom):
@@ -162,19 +163,15 @@ class WechatHandler():
         :return:
         '''
         chatroom = msg['User']
-        if self.cache.debug:
-            print("@@@@ White list chatroom received a all duty message : " + msg['Content'])
-            print("@@@@ Chatroom username: " + chatroom['UserName'])
-            print("@@@@ Chatroom nickname: " + chatroom['NickName'])
+        logging.info("@@@@ White list chatroom received a all duty message : %s" % msg['Content'])
         reply = self.getAllDutyMsg()
         if reply is not None:
-            if wechatHandler.cache.debug:
-                print("@@@@ Reply message:\n %s" % reply)
+            # logging.info("@@@@ Reply message:\n %s" % reply)
             starttime = datetime.datetime.now()
+            logging.info("@@@@ Autoreplied all duty msg to [%s][%s] chatroom " % (chatroom['UserName'], chatroom['UserName']))
             itchat.send_msg(reply, chatroom['UserName'])  # msg['FromUserName']
             endtime = datetime.datetime.now()
-            if wechatHandler.cache.debug:
-                print("@@@@ Send reply cost %s seconds" % str((endtime - starttime)))
+        logging.info("@@@@ Send reply cost %s seconds" % str((endtime - starttime)))
 
     def getAllDutyMsg(self):
         '''
@@ -202,6 +199,7 @@ class WechatHandler():
             if username is None:
                 continue
             msg = self.getAllDutyMsg()
+            logging.info("@@@@ Broadcast all duty msg to [%s][%s] chatroom " % (white,username))
             itchat.send_msg(msg, username)
 
     def textMsgRegister(self,msg):
@@ -231,8 +229,7 @@ class WechatHandler():
                 # 实际处理消息
                 reply_context.handle()
             endtime = datetime.datetime.now()
-            if self.cache.debug:
-                print("@@@@ Run cost %s seconds" % str((endtime - starttime)))
+            logging.info("@@@@ Run cost %s seconds" % str((endtime - starttime)))
 
 class State(object):
     def handle(self,context):
@@ -282,7 +279,7 @@ def dailyScheduledBroadcast():
     定时任务广播值班信息
     :return:
     '''
-    print('Schedule job triggered ...')
+    logging.info('@@@@ Schedule job triggered ...')
     global wechatHandler
     wechatHandler.broadcastAllDuty()
 
@@ -292,9 +289,9 @@ def runScheduler():
     :return:
     '''
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=dailyScheduledBroadcast, trigger='cron', day_of_week='0-6', hour=9, minute=0, second=0)
+    scheduler.add_job(func=dailyScheduledBroadcast, trigger='cron', day_of_week='0-6', hour=17, minute=50, second=0)
     scheduler.start()
-    print('@@@@ Background Scheduler started!!!')
+    logging.info('@@@@ Background Scheduler started!!!')
 
 #itchat.auto_login(loginCallback=loginCallback)
 itchat.auto_login(True,loginCallback=runScheduler)
