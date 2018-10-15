@@ -45,7 +45,6 @@ class ConfigCache():
         '''
         is_modified = False
         modify_time = os.stat(filename).st_mtime
-        print(self.file_mtime_cache)
         if self.file_mtime_cache.get(filename) is None:
             is_modified = True
         else:
