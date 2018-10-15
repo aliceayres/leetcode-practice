@@ -43,17 +43,18 @@ class ConfigCache():
         :param filename:
         :return:
         '''
-        modified = False
+        is_modified = False
         modify_time = os.stat(filename).st_mtime
+        print(self.file_mtime_cache)
         if self.file_mtime_cache.get(filename) is None:
-            self.file_mtime_cache[filename] = modify_time
-            modified = True
+            is_modified = True
         else:
             last = self.file_mtime_cache.get(filename)
-            modified = modify_time != last
-        if modified:
+            is_modified = modify_time != last
+        if is_modified:
+            self.file_mtime_cache[filename] = modify_time
             logging.info("@@@@ File[%s] has been modified!!!" % filename)
-        return modified
+        return is_modified
 
     def lookupConfigCache(self):
         '''
