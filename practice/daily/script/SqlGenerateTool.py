@@ -85,6 +85,7 @@ class Field:
         if self.type.find('DATE') > -1:
             self.type = self.type.replace('DATE', 'DATETIME')
 
+
 class TableTool:
     def tablesToSqlFile(self,root,tables):
         '''
