@@ -4,6 +4,76 @@ import os
 import time
 import logging
 import xlrd
+import cx_Oracle
+from datetime import *
+
+class OracleHelper:
+    def __init__(self):
+        self.charset='utf8'
+        try:
+            self.conn = cx_Oracle.connect('scott/tiger@DESKTOP-IASSOVJ/orcl')
+            self.cur=self.conn.cursor()
+        except cx_Oracle.Error as e:
+            print("Mysql Error %d: %s" % (e.args[0], e.args[1]))
+
+    def selectDb(self,db):
+      try:
+          self.conn.select_db(db)
+      except cx_Oracle.Error as e:
+          print("Mysql Error %d: %s" % (e.args[0], e.args[1]))
+
+    def query(self,sql):
+        try:
+           n=self.cur.execute(sql)
+           return n
+        except cx_Oracle.Error as e:
+           print("Mysql Error:%s\nSQL:%s" %(e,sql))
+           raise e
+
+
+    def queryRow(self,sql):
+        self.query(sql)
+        result = self.cur.fetchone()
+        return result
+
+    def queryAll(self,sql):
+        self.query(sql)
+        result=self.cur.fetchall()
+        desc =self.cur.description
+        d = []
+        for inv in result:
+             _d = {}
+             for i in range(0,len(inv)):
+                 _d[desc[i][0]] = str(inv[i])
+             d.append(_d)
+        return d
+
+    def insert(self,p_table_name,p_data):
+        for key in p_data:
+            if (isinstance(p_data[key],str) or isinstance(p_data[key],datetime) ):
+                if str(p_data[key])=="None":
+                    p_data[key]='null'
+                else:
+                    p_data[key] = "'"+str(p_data[key]).replace('%','％').replace('\'','')+"'"
+            else:
+                p_data[key] = str(p_data[key])
+
+        key   = ','.join(p_data.keys())
+        value = ','.join(p_data.values())
+        real_sql = "INSERT INTO " + p_table_name + " (" + key + ") VALUES (" + value + ")"
+        return self.query(real_sql)
+    def getLastInsertId(self):
+        return self.cur.lastrowid
+
+    def rowcount(self):
+        return self.cur.rowcount
+
+    def commit(self):
+        self.conn.commit()
+
+    def close(self):
+        self.cur.close()
+        self.conn.close()
 
 LOG_FORMAT = '%(asctime)s - %(filename)s[L%(lineno)d] - %(levelname)s: %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
@@ -11,7 +81,7 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 # Oracle获取用户所有表：select count(*) from user_tables
 
 def mkSubFile(lines, filename,head, sub):
-    root = 'D:\\Ayres\\sql\\'
+    root = 'D:\\Ayres\\sqls\\'
     # [des_filename, extname] = os.path.splitext(srcName)
     # print('make file: %s' % filename)
     fout = open(root+filename, 'w',encoding="utf-8")
@@ -109,41 +179,13 @@ def transDatatype(line):
         ll = ll.replace('LONG RAW', 'BLOB')
     return ll
 
-if __name__ == '__main__':
-    begin = time.time()
-    all_tables = splitByHeaderLine('D:\\Ayres\\idc.sql', '-- ----------------------------\n')
-    end = time.time()
-    # print('time is %d seconds ' % (end - begin))
-    compare_tables = ''
-    workbook = xlrd.open_workbook('D:\\Ayres\\design.xlsx')
-    all_sheets = workbook.sheet_names()
-    tables = []
-    table_name = all_sheets[0]
-    sheet = workbook.sheet_by_name(all_sheets[0])  # workbook.sheet_by_index(1)
-    rows = sheet.nrows
-    design_tables = {}
-    for j in range(1, rows):
-        tb = sheet.row_values(j)[0]
-        design_tables.setdefault(tb.upper(),1)
-    # print(all_tables)
-    # print(design_tables)
-    count = 0
-    for tt in all_tables:
-        if design_tables.get(tt,None) is not None:
-            compare_tables += tt+',Y\n'
-            count += 1
-        else:
-            compare_tables += tt+'\n'
-    # print('count: %d ' % count)
-    # print('design: %d ' % len(design_tables))
-    file = open('D:\\Ayres\\idc_oracle_compare.csv', 'w', encoding="utf-8")
-    file.write(compare_tables)
-    file.close()
+def runStructure():
+    splitByHeaderLine( "D:\\Ayres\\structure.sql", '-- ----------------------------\n')
     fields_set = []
-    to_root = "D:\\Ayres\\oracle sql\\"
+    to_root = "D:\\Ayres\\oracle_idcms\\"
     to_filename = "D:\\Ayres\\all.sql"
     all_sql = []
-    for (root, dirs, files) in os.walk("D:\\Ayres\\sql\\"):
+    for (root, dirs, files) in os.walk("D:\\Ayres\\sqls\\"):
         for filename in files:
             sql_file = os.path.join(root, filename)
             # print(sql_file)
@@ -205,6 +247,7 @@ if __name__ == '__main__':
                     lnn = transDatatype(ln)
                     fields_set.append(array[1])
                     lnn = lnn.replace('--????', '')
+                    lnn = lnn.replace('?', '')
                     lnn = lnn.replace('VARCHAR(32 CHAR)', 'VARCHAR(32)')
                     lnn = lnn.replace('DEFAULT sys_guid()', '')
                     lnn = lnn.replace('DEFAULT (\'N\')', 'DEFAULT \'N\'')
@@ -225,6 +268,8 @@ if __name__ == '__main__':
                         else:
                             lnn = lnn[:-1]
                             lnn += ' COMMENT \'' + field_comment + '\'\n'
+                    if array[0] == 'RANGE':
+                        lnn = lnn.replace('RANGE', 'RANGES')
                     if array[0] == 'KEY':
                         lnn = lnn.replace('KEY', 'KEYES')
                     if array[0] == 'MAXVALUE':
@@ -260,4 +305,106 @@ if __name__ == '__main__':
         # for st in sets:
         #     print(st)
 
+def runDataset():
+    return
+
+def getDesignTableDict():
+    workbook = xlrd.open_workbook('D:\\Ayres\\design.xlsx')
+    all_sheets = workbook.sheet_names()
+    sheet = workbook.sheet_by_name(all_sheets[0])  # workbook.sheet_by_index(1)
+    rows = sheet.nrows
+    design_tables = {}
+    for j in range(1, rows):
+        tb = sheet.row_values(j)[0]
+        design_tables.setdefault(tb.upper(), 1)
+    return design_tables
+
+def getIdcAllTablesList():
+    workbook = xlrd.open_workbook('D:\\Ayres\\oracle_info.xlsx')
+    all_sheets = workbook.sheet_names()
+    sheet = workbook.sheet_by_name(all_sheets[0])  # workbook.sheet_by_index(1)
+    rows = sheet.nrows
+    all_tables = []
+    for j in range(1, rows):
+        tb = sheet.row_values(j)[0]
+        if tb == '':
+            break
+        num = int(sheet.row_values(j)[1])
+        print((tb,num))
+        all_tables.append((tb,num))
+    return all_tables
+
+def runAllCompare():
+    compare_tables = '序号,表名,记录数,设计是否存在,是否补充,不补充原因\n'
+    design_tables = getDesignTableDict()
+    all_tables = getIdcAllTablesList()
+    print(all_tables)
+    count = 0
+    for tt in all_tables:
+        ele = []
+        count += 1
+        ele.append(str(count))
+        ele.append(tt[0])
+        ele.append(str(tt[1]))
+        if design_tables.get(tt[0], None) is not None:
+            ele.append('Y')
+        else:
+            ele.append('')
+        print(','.join(ele) + ',,\n')
+        compare_tables += ','.join(ele) + '\n'
+        # print('count: %d ' % count)
+        #  print('design: %d ' % len(design_tables))
+    file = open('D:\\Ayres\\idc全部表统计信息.csv', 'w', encoding="utf-8")
+    file.write(compare_tables)
+    file.close()
+    # print(all_tables)
+    # print(design_tables)
+
+def runCompare():
+    all_tables = splitByHeaderLine('D:\\Ayres\\idc.sql', '-- ----------------------------\n')
+    compare_tables = '序号,表名,设计是否存在,记录数量,是否补充,不补充原因\n'
+    workbook = xlrd.open_workbook('D:\\Ayres\\design.xlsx')
+    all_sheets = workbook.sheet_names()
+    sheet = workbook.sheet_by_name(all_sheets[0])  # workbook.sheet_by_index(1)
+    rows = sheet.nrows
+    design_tables = {}
+    for j in range(1, rows):
+        tb = sheet.row_values(j)[0]
+        design_tables.setdefault(tb.upper(), 1)
+    # print(all_tables)
+    # print(design_tables)
+    workbook_row = xlrd.open_workbook('D:\\Ayres\\rows.xlsx')
+    all_sheets_row = workbook_row.sheet_names()
+    sheet_row = workbook_row.sheet_by_name(all_sheets_row[0])  # workbook.sheet_by_index(1)
+    rowss = sheet_row.nrows
+    rows_tables = {}
+    for j in range(0, rowss):
+        tb = sheet_row.row_values(j)[0]
+        rows_tables.setdefault(tb.upper(), sheet_row.row_values(j)[1])
+    # print(all_tables)
+    # print(design_tables)
+    count = 0
+    for tt in all_tables:
+        ele = []
+        count += 1
+        ele.append(str(count))
+        ele.append(tt)
+        if design_tables.get(tt, None) is not None:
+            ele.append('Y')
+        else:
+            ele.append('')
+        if rows_tables.get(tt, None) is not None:
+            ele.append(str(rows_tables.get(tt, None)))
+        print(','.join(ele) + ',,\n')
+        compare_tables += ','.join(ele) + '\n'
+        # print('count: %d ' % count)
+        #  print('design: %d ' % len(design_tables))
+    file = open('D:\\Ayres\\oracle数据统计信息.csv', 'w', encoding="utf-8")
+    file.write(compare_tables)
+    file.close()
+
+if __name__ == '__main__':
+    runStructure()
+    # runDataset()
+    # runAllCompare()
 
