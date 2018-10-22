@@ -11,10 +11,10 @@ class OracleHelper:
     def __init__(self):
         self.charset='utf8'
         try:
-            self.conn = cx_Oracle.connect('scott/tiger@DESKTOP-IASSOVJ/orcl')
+            self.conn = cx_Oracle.connect('idc/ctsig2018@192.168.8.128:1521/orcl1')
             self.cur=self.conn.cursor()
         except cx_Oracle.Error as e:
-            print("Mysql Error %d: %s" % (e.args[0], e.args[1]))
+            print(e)
 
     def selectDb(self,db):
       try:
@@ -179,6 +179,20 @@ def transDatatype(line):
         ll = ll.replace('LONG RAW', 'BLOB')
     return ll
 
+def runPrimaryKey():
+    filename = "D:\\Ayres\\insert39.sql"
+    fin = open(filename, 'r', encoding="utf-8")
+    try:
+        lines = fin.readlines()
+        count = 0
+        for line in lines:
+            count += 1
+            file = open('D:\\Ayres\\insert\\insert39_'+str(count)+'.sql', 'w', encoding="utf-8")
+            file.write(line)
+            file.close()
+    finally:
+        fin.close()
+
 def runStructure():
     splitByHeaderLine( "D:\\Ayres\\structure.sql", '-- ----------------------------\n')
     fields_set = []
@@ -306,7 +320,9 @@ def runStructure():
         #     print(st)
 
 def runDataset():
-    return
+    helper = OracleHelper()
+    data = helper.queryAll("SELECT * from IDC_ATTACHMENT_NEW")
+    print(data)
 
 def getDesignTableDict():
     workbook = xlrd.open_workbook('D:\\Ayres\\design.xlsx')
@@ -404,7 +420,9 @@ def runCompare():
     file.close()
 
 if __name__ == '__main__':
-    runStructure()
+    # runStructure()
+    # runDataset()
+    runPrimaryKey()
     # runDataset()
     # runAllCompare()
 
