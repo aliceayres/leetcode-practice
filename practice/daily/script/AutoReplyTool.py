@@ -10,8 +10,12 @@ import os
 import configparser
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+from email.mime.text import MIMEText
 
-LOG_FORMAT = '%(asctime)s - %(filename)s[L%(lineno)d] - %(levelname)s: %(message)s'
+LOG_FORMAT = '%(asctime)s - Thread[%(thread)s] - %(filename)s[L%(lineno)d] - %(levelname)s: %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 # 配置缓存
@@ -24,6 +28,10 @@ class ConfigCache():
         self.duty_cache = {} # all_duty状态自动回复标题
         self.duty_excel_filename = None # 机房值班信息表格名称
         self.all_duty_title = None # 机房值班信息缓存: 日期 机房 值班人员
+        self.receiver_mail = None # 接收二维码的邮箱
+        self.mail_username = "autoreceivebox@163.com"
+        self.mail_password = "111111auto"
+        self.mail_hostname = "smtp.163.com"
         self.initCaches()
 
     def initCaches(self):
@@ -97,6 +105,8 @@ class ConfigCache():
         self.duty_excel_filename = conf.get("duty_excel", "filepath") + conf.get("duty_excel", "filename")
         # all_duty回复标题
         self.all_duty_title = conf.get("reply_title", "all_duty")
+        # 接收二维码的邮箱
+        self.receiver_mail = conf.get("mail","receiver")
 
     def reloadDutyCache(self):
         '''
@@ -206,6 +216,44 @@ class WechatHandler():
             logging.info("@@@@ Broadcast all duty msg to [%s][%s] chatroom " % (white,username))
             itchat.send_msg(msg, username)
 
+    def handleQrcode(self,qrcode,uuid,status):
+        '''
+        处理二维码
+        :param qrcode:
+        :param uuid:
+        :param status:
+        :return:
+        '''
+        logging.info('@@@@ Handle Qrcode ...')
+        global notSendQrcode
+        if notSendQrcode and len(qrcode) != 0:
+            logging.info('@@@@ Saving QR image and send email ...')
+            with open('QR.png', 'wb') as f:
+                f.write(qrcode)
+            self.sendQrcodeMail(qrcode)
+            notSendQrcode = False
+
+    def sendQrcodeMail(self,qrimage):
+        '''
+        发送登录二维码到邮箱
+        :param qrimage:
+        :return:
+        '''
+        msgRoot = MIMEMultipart('related')
+        msgRoot['Subject'] = "自动回复登录二维码"
+        msgRoot['From'] = self.cache.mail_username
+        msgRoot['To'] = self.cache.receiver_mail
+        msgText = MIMEText('<b>您的微信需要重新扫码登录.</b><br><img src="cid:qrimage">', 'html', 'utf-8')
+        msgRoot.attach(msgText)
+        msgImage = MIMEImage(qrimage)
+        msgImage.add_header('Content-ID', '<qrimage>')
+        msgRoot.attach(msgImage)
+        smtp = smtplib.SMTP()
+        smtp.connect(self.cache.mail_hostname)
+        smtp.login(self.cache.mail_username, self.cache.mail_password)
+        smtp.sendmail(self.cache.mail_username, self.cache.receiver_mail, msgRoot.as_string())
+        smtp.quit()
+
     def textMsgRegister(self,msg):
         '''
         处理来自微信的群聊文本消息
@@ -287,17 +335,37 @@ def dailyScheduledBroadcast():
     global wechatHandler
     wechatHandler.broadcastAllDuty()
 
+def keepAlive():
+    itchat.send_msg('保活信息', 'filehelper')
+
 def runScheduler():
     '''
-    启动定时任务
+    启动定时任务不能
     :return:
     '''
     scheduler = BackgroundScheduler()
     scheduler.add_job(func=dailyScheduledBroadcast, trigger='cron', day_of_week='0-6', hour=9, minute=0, second=0)
+    scheduler.add_job(func=keepAlive, trigger='interval',seconds = 600)
     scheduler.start()
     logging.info('@@@@ Background Scheduler started!!!')
 
-#itchat.auto_login(loginCallback=loginCallback)
-itchat.auto_login(True,loginCallback=runScheduler)
-#itchat.auto_login(enableCmdQR=1,loginCallback=runScheduler)
-itchat.run()
+def logoutCallback():
+    logging.info('@@@@ logout callback...')
+
+def qrCodeCallback(uuid, status, qrcode):
+    global wechatHandler
+    wechatHandler.handleQrcode(qrcode,uuid,status)
+
+if __name__ == '__main__':
+    while True:
+        global notSendQrcode
+        notSendQrcode = True
+        # itchat.auto_login(hotReload=True,loginCallback=runScheduler,exitCallback=logoutCallback)
+        # itchat.auto_login(hotReload=True,enableCmdQR=1,loginCallback=runScheduler,exitCallback=logoutCallback)
+        itchat.auto_login(hotReload=True,loginCallback=runScheduler,exitCallback=logoutCallback,qrCallback=qrCodeCallback)
+        itchat.dump_login_status()
+        # itchat.start_receiving()
+        itchat.run(debug=False)
+        logging.info('@@@@ itchat run end！')
+    logging.info('@@@@ __main__ end！')
+
