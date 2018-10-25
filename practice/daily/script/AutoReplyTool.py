@@ -224,7 +224,6 @@ class WechatHandler():
         :param status:
         :return:
         '''
-        logging.info('@@@@ Handle Qrcode ...')
         global notSendQrcode
         if notSendQrcode and len(qrcode) != 0:
             logging.info('@@@@ Saving QR image and send email ...')
@@ -243,7 +242,7 @@ class WechatHandler():
         msgRoot['Subject'] = "自动回复登录二维码"
         msgRoot['From'] = self.cache.mail_username
         msgRoot['To'] = self.cache.receiver_mail
-        msgText = MIMEText('<b>您的微信需要重新扫码登录.</b><br><img src="cid:qrimage">', 'html', 'utf-8')
+        msgText = MIMEText('<b>您的微信机器人需要重新扫码登录.</b><br><img src="cid:qrimage">', 'html', 'utf-8')
         msgRoot.attach(msgText)
         msgImage = MIMEImage(qrimage)
         msgImage.add_header('Content-ID', '<qrimage>')
@@ -364,8 +363,6 @@ if __name__ == '__main__':
         # itchat.auto_login(hotReload=True,enableCmdQR=1,loginCallback=runScheduler,exitCallback=logoutCallback)
         itchat.auto_login(hotReload=True,loginCallback=runScheduler,exitCallback=logoutCallback,qrCallback=qrCodeCallback)
         itchat.dump_login_status()
-        # itchat.start_receiving()
         itchat.run(debug=False)
         logging.info('@@@@ itchat run end！')
     logging.info('@@@@ __main__ end！')
-
