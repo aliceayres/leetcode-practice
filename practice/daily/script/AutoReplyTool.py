@@ -182,8 +182,9 @@ class WechatHandler():
         if reply is not None:
             # logging.info("@@@@ Reply message:\n %s" % reply)
             starttime = datetime.datetime.now()
-            logging.info("@@@@ Autoreplied all duty msg to [%s][%s] chatroom " % (chatroom['UserName'], chatroom['UserName']))
-            itchat.send_msg(reply, chatroom['UserName'])  # msg['FromUserName']
+            logging.info("@@@@ Autoreplied all duty msg to [%s] chatroom " % (chatroom['UserName']))
+            r = itchat.send_msg(reply, chatroom['UserName'])  # msg['FromUserName']
+            logging.info("@@@@ Send result: [%s]" % str(r))
             endtime = datetime.datetime.now()
         logging.info("@@@@ Send reply cost %s seconds" % str((endtime - starttime)))
 
@@ -214,7 +215,8 @@ class WechatHandler():
                 continue
             msg = self.getAllDutyMsg()
             logging.info("@@@@ Broadcast all duty msg to [%s][%s] chatroom " % (white,username))
-            itchat.send_msg(msg, username)
+            r = itchat.send_msg(msg, username)
+            logging.info("@@@@ Send result: [%s]" % str(r))
 
     def handleQrcode(self,qrcode,uuid,status):
         '''
@@ -343,7 +345,7 @@ def runScheduler():
     :return:
     '''
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=dailyScheduledBroadcast, trigger='cron', day_of_week='0-6', hour=9, minute=0, second=0)
+    scheduler.add_job(func=dailyScheduledBroadcast, trigger='cron', day_of_week='0-6', hour=11, minute=8, second=0)
     scheduler.add_job(func=keepAlive, trigger='interval',seconds = 600)
     scheduler.start()
     logging.info('@@@@ Background Scheduler started!!!')
