@@ -12,7 +12,6 @@ for line in cookie_str.split(';'):
     cookie[name]=value
 # 使用cookie访问网站
 res = requests.get(check_url,cookies=cookie)
-file = open('D:\\Ayres\\readfree.csv', 'w', encoding="utf-8")
 # 读取书籍列表
 # for i in range(5070):
 for i in range(10):
@@ -34,11 +33,12 @@ for i in range(10):
         book['href'] = aa.get('href')
         book['name'] = aa.get_text().strip()
         book['score'] = score
-        file.write(aa.get('href')+','+aa.get_text().strip()+'\n')
         book_url = 'http://readfree.me'+aa.get('href')+'?_pjax=%23pjax'
         book_html = requests.get(book_url,cookies=cookie)
         book_obj = BeautifulSoup(book_html.content, 'html.parser')
         # print(book_obj)
+        douban_url = book_obj.find('span','badge badge-success').parent.find('a').get('href')
+        book['douban'] = douban_url
         down_list = book_obj.find_all('a','book-down btn btn-mini btn-success')
         mobi = []
         pdf = []
@@ -55,8 +55,13 @@ for i in range(10):
                 mobi.append((down_href,down_num))
             if down_href.find('.pdf') > -1:
                 pdf.append((down_href,down_num))
-        book['mobi'] = sorted(mobi,key=lambda x:x[1],reverse=True)
-        book['pdf'] = sorted(pdf,key=lambda x:x[1],reverse=True)
         book['down'] = total_down_num
+        mobi = sorted(mobi,key=lambda x:x[1],reverse=True)
+        pdf = sorted(pdf,key=lambda x:x[1],reverse=True)
+        if len(mobi) > 0:
+            book['most_mobi'] = mobi[0][0]
+        if len(pdf) > 0:
+            book['most_pdf'] = pdf[0][0]
+        book['mobi'] = mobi
+        book['pdf'] = pdf
         print(book)
-
