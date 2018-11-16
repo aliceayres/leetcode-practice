@@ -46,7 +46,7 @@ def connect_readfree_db():
                            charset='utf8')
 
 def get_page_info(conn):
-    sql = "SELECT * from (select page, count(id) as num from book GROUP BY page) t where t.num <> 20 ORDER by page"
+    sql = "SELECT * from (select page, count(id) as num from book GROUP BY page) t where t.num <> 20 ORDER by page desc"
     cursor = conn.cursor()
     cursor.execute(sql)
     result = cursor.fetchone()
@@ -105,18 +105,28 @@ class ThreadLoad(threading.Thread):
         self.threadNum = threadNum
         self.conn = connect_readfree_db()
         self.page_begin = get_page_info(self.conn)
-        self.total = 5070
+        self.page_begin = 1
+        self.total = 5082
 
     def run(self):
-        max = self.total//self.threadNum
-        for i in range(max):
+        max = self.total//self.threadNum+1
+        i = 0
+        while i < max:
             page = i*self.threadNum+self.seq
             if page >= self.page_begin and page <= self.total:
-                self.loadPageBook(page)
+                try:
+                    self.loadPageBook(page)
+                    i += 1
+                except Exception as e:
+                    log.logger.error(e)
+                    log.logger.error("读取页码[%s]的图书信息发生错误, 即将休眠60s后重试……" % str(page))
+                    time.sleep(60)
+            else:
+                i += 1
 
     # 读取某页图书信息
     def loadPageBook(self,page):
-        # log.logger.info("正在读取页码[%s]的图书信息……"%str(page))
+        log.logger.info("正在读取页码[%s]的图书信息……"%str(page))
         page_url = 'http://readfree.me/?page='+str(page)
         html = requests.get(page_url,cookies=self.cookie)
         bs_obj = BeautifulSoup(html.content,'html.parser')
@@ -138,9 +148,12 @@ class ThreadLoad(threading.Thread):
             book['name'] = aa.get_text().strip()
             existed = get_by_booklink(self.conn,book['book_link']) > 0
             if existed:
-                log.logger.info("图书[%s][%s]已经采集过……" % (book['book_link'],book['name']))
+                log.logger.info("[%s]图书[%s][%s]已经采集过……" % (str(page),book['book_link'],book['name']))
                 continue
-            book['score'] = float(score)
+            if score == 'DIY':
+                book['score'] = 0
+            else:
+                book['score'] = float(score)
             book_url = 'http://readfree.me'+aa.get('href')+'?_pjax=%23pjax'
             book_html = requests.get(book_url,cookies=self.cookie)
             book_obj = BeautifulSoup(book_html.content, 'html.parser')
@@ -182,7 +195,7 @@ class ThreadLoad(threading.Thread):
 
 common = CommonData()
 thread_loaders = []
-thread_num = 50
+thread_num = 10
 for i in range(thread_num):
     name = 'load-thread-'+str(i+1)
     dataQueue = []
