@@ -45,8 +45,14 @@ def connect_readfree_db():
                            database='readfree',
                            charset='utf8')
 
-def get_by_booklink(book_link):
-    conn = connect_readfree_db()
+def get_page_info(conn):
+    sql = "SELECT * from (select page, count(id) as num from book GROUP BY page) t where t.num <> 20 ORDER by page"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    result = cursor.fetchone()
+    return result[0]
+
+def get_by_booklink(conn,book_link):
     cursor = conn.cursor()
     cursor.execute(("SELECT  * FROM book where book_link = \'%s\'") % book_link)
     row = cursor.rowcount
@@ -54,24 +60,24 @@ def get_by_booklink(book_link):
     # print(row)
     # print(len(result))
     # print(result)
+    cursor.close()
     return row
 
-def insert_book_check(book):
-    row = get_by_booklink(book['book_link'])
+def insert_book_check(conn,book):
+    row = get_by_booklink(conn,book['book_link'])
     if row == 0:
-        insert_data('book',book)
+        insert_data(conn,'book',book)
 
-def insert_book(book):
-    insert_data('book', book)
+def insert_book(conn,book):
+    insert_data(conn,'book', book)
 
-def insert_data(table,data_dict):
+def insert_data(conn,table,data_dict):
     try:
         data_values = "(" + "%s," * (len(data_dict)) + ")"
         data_values = data_values.replace(',)', ')')
         dbField = data_dict.keys()
         dataTuple = tuple(data_dict.values())
         dbField = str(tuple(dbField)).replace("'",'')
-        conn = connect_readfree_db()
         cursor = conn.cursor()
         sql = """ insert into %s %s values %s """ % (table,dbField,data_values)
         params = dataTuple
@@ -97,13 +103,15 @@ class ThreadLoad(threading.Thread):
         self.dataQueue = dataQueue
         self.cookie = cookie
         self.threadNum = threadNum
+        self.conn = connect_readfree_db()
+        self.page_begin = get_page_info(self.conn)
+        self.total = 5070
 
     def run(self):
-        total = 5070
-        max = total//self.threadNum
+        max = self.total//self.threadNum
         for i in range(max):
             page = i*self.threadNum+self.seq
-            if page <= total:
+            if page >= self.page_begin and page <= self.total:
                 self.loadPageBook(page)
 
     # 读取某页图书信息
@@ -125,8 +133,10 @@ class ThreadLoad(threading.Thread):
             score = meta.find('span','badge badge-success').get_text()
             # print(aa)
             book['book_link'] = aa.get('href')
+            tmp = aa.get('href').split('/')
+            book['no'] = tmp[2]
             book['name'] = aa.get_text().strip()
-            existed = get_by_booklink(book['book_link']) > 0
+            existed = get_by_booklink(self.conn,book['book_link']) > 0
             if existed:
                 log.logger.info("图书[%s][%s]已经采集过……" % (book['book_link'],book['name']))
                 continue
@@ -165,8 +175,9 @@ class ThreadLoad(threading.Thread):
                 book['pdf_most'] = pdf[0][0]
             book['mobi'] = str(mobi)
             book['pdf'] = str(pdf)
+            book['page'] = page
             # self.dataQueue.append(book)
-            insert_book(book)
+            insert_book(self.conn,book)
             log.logger.info("页码[%s]的[%s]图书信息为：%s"%(str(page),str(k),str(book)))
 
 common = CommonData()
