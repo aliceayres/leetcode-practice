@@ -9,7 +9,7 @@ class Solution:
         """
         :type numbers: List[int] 直接处理原数组
         """
-        for i in range(len(numbers)-1):
+        for i in range(len(numbers)):
             current = numbers[i]
             j = i - 1
             while j >= 0 and current < numbers[j]:
@@ -19,7 +19,7 @@ class Solution:
 
 if __name__ == '__main__':
     slt = Solution()
-    numbers = [2,1,4,9,3,12]
+    numbers = [2,1,4,9,3,12,7]
     print('# Insertion sort is:')
     slt.insertionSort(numbers)
     print(numbers)
