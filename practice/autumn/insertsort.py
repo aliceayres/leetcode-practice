@@ -1,6 +1,5 @@
 '''
 Insertion-Sort 插入排序
-
 '''
 
 class Solution:
@@ -16,6 +15,5 @@ class Solution:
 if __name__ == '__main__':
     slt = Solution()
     numbers = [2,1,4,9,3,12,7,6]
-    print('# Insertion sort is:')
     slt.insertionSort(numbers)
     print(numbers)
