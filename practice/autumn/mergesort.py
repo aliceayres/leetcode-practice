@@ -1,5 +1,6 @@
 '''
 Merge-Sort 归并排序
+非哨兵 2.3-2
 '''
 
 import math
@@ -20,7 +21,7 @@ class Solution:
                 numbers[k] = right[j]
                 j += 1
 
-    def merge2(self,numbers,p,q,r):
+    def mergeWithoutMax(self,numbers,p,q,r):
         left = numbers[p:q + 1]
         right = numbers[q + 1:r + 1]
         i = 0
@@ -44,7 +45,7 @@ class Solution:
             q = math.floor((p+r)/2)
             self.mergeSort(numbers,p,q)
             self.mergeSort(numbers,q+1,r)
-            self.merge2(numbers,p,q,r)
+            self.mergeWithoutMax(numbers,p,q,r)
 
 if __name__ == '__main__':
     slt = Solution()
