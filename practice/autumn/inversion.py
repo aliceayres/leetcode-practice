@@ -24,11 +24,9 @@ class Solution:
     def inversion(self,num,begin,end):
         if begin < end:
             mid = (begin+end)//2
-            print(num[begin:mid + 1], num[mid + 1:end + 1])
             left = self.inversion(num,begin,mid)
             right = self.inversion(num,mid+1,end)
             cross = self.mergecross(num,begin,end)
-            print(num[begin:mid + 1], num[mid + 1:end + 1],left,right,cross)
             return left + right + cross
         else:
             return 0
