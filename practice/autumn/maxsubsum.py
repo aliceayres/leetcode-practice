@@ -1,13 +1,31 @@
 '''
 Maximum Subsequence Sum 最大子数组和
+naive 暴力求解 n^2 4.1-2
 subseq 递归解法 nlgn
-linear 线性时间解法 n
+linear 线性时间解法 n 4.1-5
 '''
 
 
 class Solution:
     def solute(self,num):
-        return self.linear(num,0,len(num)-1)
+        # return self.linear(num,0,len(num)-1)
+        return self.naive(num)
+
+
+    def naive(self,num):
+        max = num[0]
+        begin = 0
+        end = 0
+        for i in range(len(num)):
+            sum = 0
+            for j in range(i,len(num)):
+                sum += num[j]
+                if sum > max:
+                    max = sum
+                    begin = i
+                    end = j
+        return max,begin,end
+
 
     def subseq(self,num,begin,end):
         if len(num) == 0:
