@@ -64,13 +64,14 @@ if __name__ == '__main__':
     # problem = slt.doPost(graphql,parameter)
     # print(problem)
     # '''
+    # problem_url = "https://leetcode.com/problems/longest-substring-without-repeating-characters/"
     problem_url = "https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/"
     driver = webdriver.Chrome("D:\Ayres\download\chromedriver_win32\chromedriver.exe")
     driver.get(problem_url)
-    driver.implicitly_wait(660)
-    title = driver.find_elements_by_xpath("//title/*")
+    driver.implicitly_wait(60)
+    title = driver.find_elements_by_xpath("//meta[@property='og:title']")
     for t in title:
-        print(t.text)
+        print(t.get_attribute("content"))
     div = driver.find_elements_by_xpath("//meta[@name='description']")
     for e in div:
         print(e.get_attribute("content"))
