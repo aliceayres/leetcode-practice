@@ -1,5 +1,5 @@
 '''
-kth quantiles K分位数 9.3-6
+kth quantiles K分位数 9.3-6 nlgk
 n个元素集合无序寻找k分位数 k-1个统计量
 k分位数 有序k等分(个数相差不超过1)
 '''
