@@ -1,39 +1,73 @@
 '''
+选择问题
 Kth smallest rank 第k小的值
 堆排序 归并排序 nlgn
-期望线性时间 所有元素互异 n 最坏 n^2 按余下元素中最大的划分
-最坏线性时间 n
-基于循环 9.2-3
+rand-select 期望线性时间 所有元素互异 n 最坏 n^2 按余下元素中最大的划分
+rand-select-loop 基于循环 9.2-3
+select 最坏线性时间 n
 '''
 
 import random
 
 class Solution:
     def solute(self,num,k):
-        return self.exlinear_loop(num,0,len(num)-1,k)
+        return self.select(num,0,len(num)-1,k)
 
-    def exlinear(self,num,begin,end,k):
-        print(num[begin:end + 1],k)
+    def insertion_mid(self,num,begin,end):
+        mid = (begin+end)//2
+        for i in range(begin+1,end+1):
+            n = num[i]
+            j = i - 1
+            while(j >= begin and num[j] > n):
+                num[j+1] = num[j]
+                j -= 1
+            num[j+1] = n
+        return mid
+
+    def select(self,num,begin,end,k):
         if begin == end:
             return num[begin]
-        pivot = self.randpart(num,begin,end)
+        i = begin
+        cache = {} # cache mid:index
+        while i <= end:
+            ii = i+4
+            if i+4 > end:
+                ii = end
+            mid_idx = self.insertion_mid(num,i,ii)
+            i += 5
+            cache[num[mid_idx]] = mid_idx
+        mids = list(cache.keys())
+        k_mid = (len(mids)-1)//2+1
+        x = self.select(mids,0,len(mids)-1,k_mid)
+        index = cache[x]
+        pivot = self.partition(num,begin,end,index=index)
         if k == pivot+1-begin:    # don't forget begin
             return num[pivot]
         elif k < pivot+1-begin:
-            return self.exlinear(num,begin,pivot-1,k)
+            return self.select(num,begin,pivot-1,k)
         else:
-            return self.exlinear(num,pivot+1,end,k-pivot-1+begin)
+            return self.select(num,pivot+1,end,k-pivot-1+begin)
+
+    def rand_select(self,num,begin,end,k):
+        if begin == end:
+            return num[begin]
+        pivot = self.partition(num,begin,end)
+        if k == pivot+1-begin:    # don't forget begin
+            return num[pivot]
+        elif k < pivot+1-begin:
+            return self.rand_select(num,begin,pivot-1,k)
+        else:
+            return self.rand_select(num,pivot+1,end,k-pivot-1+begin)
 
 
-    def exlinear_loop(self,num,p,q,r):
+    def rand_select_loop(self,num,p,q,r):
         begin = p
         end = q
         kk = r
         while True:
-            print(num[begin:end + 1], kk)
             if begin == end:
                 return num[begin]
-            pivot = self.randpart(num, begin, end)
+            pivot = self.partition(num, begin, end)
             if kk == pivot + 1 - begin:  # don't forget begin
                 return num[pivot]
             elif kk < pivot + 1 - begin:
@@ -43,12 +77,13 @@ class Solution:
                 begin = pivot + 1
 
 
-    def randpart(self,num,begin,end):
-        print(begin,end)
-        rand = random.randint(begin,end)
-        self.exch(num,begin,rand)
+    def partition(self,num,begin,end,index = None):
+        if index is None:
+            rand = random.randint(begin,end)
+            self.exch(num,begin,rand)
+        else:
+            self.exch(num,begin,index)
         x = num[begin]
-        print(x)
         i = begin
         j = begin
         while j <= end:
@@ -67,7 +102,7 @@ class Solution:
 
 if __name__ == '__main__':
     slt = Solution()
-    num = [1, 3, 9, 2, 6, 4, 5, 7, 8, 10]
-    k = 5
+    num = [1, 3, 7, 8, 9, 2, 6, 4, 10, 5]
+    k = 9
     result = slt.solute(num,k)
-    print(result)
+    print(num,k,result)
