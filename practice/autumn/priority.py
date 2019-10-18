@@ -2,44 +2,30 @@
 Priority Queue
 基于最大堆的优先队列
 '''
+from practice.autumn import heap as hp
 
+class Node:
+    def __init__(self,data,priority):
+        self.data = data
+        self.priority = priority
+
+    def __str__(self):
+        return format('data=%s,priority=%s' % (str(self.data),str(self.priority)))
 
 class PriorityQueue:
     def __init__(self):
         self.queue = []
+        self.heap = hp.Heap()
 
-    def get_queue(self):
-        return self.queue
-
-    def parent(self,i):
-        # return (i-1)>>1
-        return (i-1)//2
-
-    def left(self,i):
-        # return (i<<1)+1
-        return 2*i+1
-
-    def right(self,i):
-        # return (i+1)<<1
-        return 2*i+2
-
-    def max_heapify(self, num, i, length=None):  # lgh
-        if length is None:
-            length = len(num)
-        largest = i
-        l = self.left(i)
-        r = self.right(i)
-        if l < length and num[l] >= num[i]:
-            largest = l
-        if r < length and num[r] >= num[largest]:  # this compare large and r!
-            largest = r
-        if largest != i:
-            self.exch(num, largest, i)
-            self.max_heapify(num, largest, length)
+    def print_queue(self):
+        for e in self.queue:
+            print(e)
 
     def insert(self,x):
-        self.queue.append(-1)
-        self.increase_key(len(self.queue)-1,x)
+        k = x.priority
+        x.priority = -1
+        self.queue.append(x)
+        self.increase_key(len(self.queue)-1,k)
         return
 
     def maximum(self):
@@ -47,38 +33,47 @@ class PriorityQueue:
             return None
         return self.queue[0]
 
+    def max_heapify(self,i): # lgh
+        length = len(self.queue)
+        largest = i
+        l = self.heap.left(i)
+        r = self.heap.right(i)
+        if l < length and self.queue[l].priority >= self.queue[i].priority:
+            largest = l
+        if r < length and self.queue[r].priority >= self.queue[largest].priority:
+            largest = r
+        if largest != i:
+            self.heap.exch(self.queue,largest,i)
+            self.max_heapify(largest)
+
     def extract_max(self):
         if len(self.queue) == 0:
             return None
         max = self.queue[0]
         self.queue[0] = self.queue[-1]
         self.queue.pop(-1)
-        self.max_heapify(self.queue,0)
+        self.max_heapify(0)
         return max
 
     def increase_key(self,idx,k):
-        parent = self.parent(idx)
+        parent = self.heap.parent(idx)
         i = idx
-        self.queue[idx] = k
-        while parent >= 0 and self.queue[parent] < k:
-            self.exch(self.queue,i,parent)
+        self.queue[idx].priority = k
+        while parent >= 0 and self.queue[parent].priority < k:
+            self.heap.exch(self.queue,i,parent)
             i = parent
-            parent = self.parent(parent)
+            parent = self.heap.parent(parent)
         return
-
-    def exch(self, num, a, b):
-        t = num[a]
-        num[a] = num[b]
-        num[b] = t
 
 if __name__ == '__main__':
     pq = PriorityQueue()
-    num = [7,9,1,2,6,5,8,3,4,0]
+    num = [("a",7),("b",9),("c",11),("d",2),("e",6),("f",5),("g",8),("h",3),("i",4),("j",1)]
     for e in num:
-        pq.insert(e)
-    print(pq.get_queue())
-    print(pq.extract_max())
-    print(pq.get_queue())
-    print(pq.maximum())
+        node = Node(e[0],e[1])
+        pq.insert(node)
+    pq.print_queue()
+    print("max=",pq.extract_max())
+    pq.print_queue()
+    print("max=",pq.maximum())
     pq.increase_key(3,13)
-    print(pq.get_queue())
+    pq.print_queue()
