@@ -4,6 +4,7 @@ Heap 堆
 维护堆性质
 建堆
 堆排序
+堆删除 6.5-8
 '''
 
 class Heap:
@@ -21,6 +22,13 @@ class Heap:
             self.max_heapify(num,i)
             i -= 1
         return num
+
+    def heap_delete(self,num,i):
+        deleted = num[i]
+        num[i] = num[-1]
+        num.pop(-1)
+        self.max_heapify(num,i)
+        return deleted
 
     def max_heapify(self,num,i,length = None): # lgh
         if length is None:
@@ -74,11 +82,13 @@ class Heap:
 
 if __name__ == '__main__':
     slt = Heap()
-    numbers = [4,1,3,2,16,9,10,14,8,7]
-    slt.heap_sort(numbers)
-    print(numbers)
-    # slt.build_heap(numbers)
+    numbers = [4,1,13,12,16,9,10,14,8,7]
+    # slt.heap_sort(numbers)
     # print(numbers)
+    slt.build_heap(numbers)
+    print(numbers)
+    slt.heap_delete(numbers,2)
+    print(numbers)
     # i = 1
     # print(slt.parent(i),i,slt.left(i),slt.right(i))
     # print(slt.leafbegin(12))
