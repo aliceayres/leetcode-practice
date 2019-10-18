@@ -20,8 +20,7 @@ class FIFOQueue:
         node = self.priority.extract_max()
         if node is not None:
             return node.data
-        else:
-            return None
+        return None
 
 if __name__ == '__main__':
     q = FIFOQueue()
