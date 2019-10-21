@@ -21,7 +21,8 @@ class Stack:
     def pop(self):
         if self.stack_empty():
             raise Exception("stack underflow")
-        e = self.stack.pop(self.top)
+        e = self.stack[self.top]
+        self.stack[self.top] = None
         self.top -= 1
         return e
 
@@ -37,4 +38,5 @@ if __name__ == '__main__':
     print(stack.pop())
     print(stack.pop())
     print(stack.pop())
-    print(stack.pop())
+    # print(stack.pop())
+    print(stack.stack)
