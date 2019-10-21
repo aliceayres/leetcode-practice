@@ -12,8 +12,11 @@ class Stack:
     def stack_empty(self):
         return self.top == -1
 
+    def stack_full(self):
+        return self.top == self.size - 1
+
     def push(self,x):
-        if self.top == self.size-1:
+        if self.stack_full():
             raise Exception('stack upflow')
         self.top += 1
         self.stack[self.top] = x
