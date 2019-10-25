@@ -12,7 +12,8 @@ class Node:
 
 class BST:
     def __init__(self,num):
-        self.root = self.build(num)
+        self.root = None
+        self.build(num)
         self.sorted = []
 
     def sort_bst(self):
@@ -27,27 +28,31 @@ class BST:
         self.sorted.append(p.key)
         self.traversal(p.right)
 
+    def insert(self,x):
+        p = self.root
+        while True:
+            if x >= p.key:
+                if p.right is None:
+                    p.right = Node(x, parent=p)
+                    break
+                else:
+                    p = p.right
+
+            if x < p.key:
+                if p.left is None:
+                    p.left = Node(x, parent=p)
+                    break
+                else:
+                    p = p.left
+
     def build(self,num):
         if num is None or len(num) == 0:
             return None
         root = Node(num[0])
+        self.root = root
         for i in range(1,len(num)):
-            p = root
-            while True:
-                if num[i] >= p.key:
-                    if p.right is None:
-                        p.right = Node(num[i],parent=p)
-                        break
-                    else:
-                        p = p.right
-
-                if num[i] < p.key:
-                    if p.left is None:
-                        p.left = Node(num[i],parent=p)
-                        break
-                    else:
-                        p = p.left
-        return root
+            x = num[i]
+            self.insert(x)
 
     def search(self,x):
         p = self.root
