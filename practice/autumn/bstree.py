@@ -167,28 +167,74 @@ class BST:
     def max(self):
         return self.rightest(self.root)
 
+    def right_rotation(self,x):
+        node = self.search(x)
+        if node is None:
+            return
+        y = node.left
+        if y is None:
+            return
+        if node.parent is None:
+            self.root = y
+        else:
+            y.parent = node.parent
+            if node.parent.left == node:
+                node.parent.left = y
+            else:
+                node.parent.right = y
+        node.left = y.right
+        if y.right is not None:
+            y.right.parent = node
+        y.right = node
+        node.parent = y
+
+    def left_rotation(self,x):
+        node = self.search(x)
+        if node is None:
+            return
+        y = node.right
+        if y is None:
+            return
+        if node.parent is None:
+            self.root = y
+        else:
+            y.parent = node.parent
+            if node.parent.left == node:
+                node.parent.left = y
+            else:
+                node.parent.right = y
+        node.right = y.left
+        if y.left is not None:
+            y.left.parent = node
+        y.left = node
+        node.parent = y
+
 if __name__ == '__main__':
     num = [2,1,8,3,20,5,15,9,7,32]
     print(num)
     bst = BST(num)
-    print('sorted',bst.sort_bst(),'dlr',bst.dlr_bst())
     print(bst.search(15))
     print(bst.search(25))
     print(bst.min().key)
     print(bst.max().key)
-    print('predecessor:')
-    for e in bst.sort_bst():
-        node = bst.predecessor(e)
-        if node is None:
-            print(None)
-        else:
-            print(node.key)
-    print('successor:')
-    for e in bst.sort_bst():
-        node = bst.successor(e)
-        if node is None:
-            print(None)
-        else:
-            print(node.key)
-    bst.delete(15)
+    print('sorted',bst.sort_bst(),'dlr',bst.dlr_bst())
+    # print('predecessor:')
+    # for e in bst.sort_bst():
+    #     node = bst.predecessor(e)
+    #     if node is None:
+    #         print(None)
+    #     else:
+    #         print(node.key)
+    # print('successor:')
+    # for e in bst.sort_bst():
+    #     node = bst.successor(e)
+    #     if node is None:
+    #         print(None)
+    #     else:
+    #         print(node.key)
+    bst.left_rotation(7)
+    print('sorted', bst.sort_bst(), 'dlr', bst.dlr_bst())
+    y = bst.search(7)
+    bst.right_rotation(y.parent.key)
+    # bst.delete(15)
     print('sorted',bst.sort_bst(),'dlr',bst.dlr_bst())
