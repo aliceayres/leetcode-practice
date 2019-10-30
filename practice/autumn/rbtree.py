@@ -11,7 +11,6 @@ class Node:
         self.right = right
         self.color = color
         return
-
 class RBTree:
     def __init__(self):
         self.root = None
