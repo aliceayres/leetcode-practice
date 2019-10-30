@@ -1,5 +1,6 @@
 '''
 Red-Black Tree 红黑树
+build red-black tree 13.3-2
 '''
 
 class Node:
@@ -12,10 +13,9 @@ class Node:
         return
 
 class RBTree:
-    def __init__(self,array = None):
-        self.array = array
+    def __init__(self):
+        self.root = None
         self.nil = Node(None,color='black')
-        self.root = self.build_rbtree(array)
 
     def build_node(self,array, index):
         info = array[index]
@@ -74,8 +74,14 @@ class RBTree:
         sorted.append(p.key)
         self.traversal(p.right,sorted)
 
+    def build(self,num):
+        for e in num:
+            self.rb_insert(e)
+
     def rb_insert(self,z):
         node = Node(z,color='red',left=self.nil,right=self.nil,parent=self.nil)
+        if self.root is None:
+            self.root = self.nil
         x = self.root
         y = self.nil
         while x != self.nil:
@@ -91,10 +97,11 @@ class RBTree:
         else:
             y.right = node
         node.p = y
-        self.rb_update_fixup(node)
+        self.rb_insert_fixup(node)
 
-    def rb_update_fixup(self,x):
+    def rb_insert_fixup(self,x):
         node = x
+        # to let the violation go up the tree
         while node != self.root and node.p.color == 'red':
             self.level_travelsal()
             grand = node.p.p
@@ -104,6 +111,8 @@ class RBTree:
                 uncle = grand.right
                 if uncle != self.nil and uncle.color == 'red':
                     # case 1: uncle is red then: grand = red, parent & uncle = black, node = grand
+                    # this cause: the violation go up the tree 2 level, while will continue
+                    # if go up to root, will end
                     grand.color = 'red'
                     uncle.color = 'black'
                     node.p.color = 'black'
@@ -112,9 +121,11 @@ class RBTree:
                     if node.p.right == node:
                         # case 2: different side then: rotate parent-node, node = original parent
                         # rotate-direction: right child then parent left rotate, original parent is new left child
+                        # this cause: to case 3
                         self.left_rotation(node.p)
                         node = node.left
                     # cace 3: same side then: rotate grand-parent, grand = red, parent = black
+                    # this cause: end
                     self.right_rotation(grand)
                     grand.color = 'red'
                     node.p.color = 'black'
@@ -138,6 +149,7 @@ class RBTree:
                     grand.color = 'red'
                     node.p.color = 'black'
         self.root.color = 'black'
+        self.root.p = self.nil
         return
 
     def exch(self,num,i,j):
@@ -206,9 +218,14 @@ class RBTree:
 
 if __name__ == '__main__':
     array = [[7, 'black', 1,2], [3,'black',None,None], [18,'red',3,4], [10,'black',5,6], [22,'black',None,7], [8,'red',None,None], [11,'red',None,None], [26,'red',None,None]]
-    rb = RBTree(array=array)
+    rb = RBTree()
+    rb.root = rb.build_rbtree(array)
     rb.level_travelsal()
     rb.rb_insert(15)
     print('tree after rb insert 15:')
     rb.level_travelsal()
     rb.sorted_traversal()
+    num = [41,38,31,12,19,8]
+    rbt = RBTree()
+    rbt.build(num)
+    rbt.level_travelsal()
