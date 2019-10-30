@@ -93,7 +93,7 @@ class RBTree:
         self.rb_insert_fixup(node)
 
     def rb_insert_fixup(self,node):
-        return
+                return
 
     def exch(self,num,i,j):
         t = num[i]
@@ -111,8 +111,7 @@ class RBTree:
                 return p
         return None
 
-    def right_rotation(self,x):
-        node = self.search(x)
+    def right_rotation(self,node):
         if node is None:
             return
         y = node.left
@@ -132,8 +131,11 @@ class RBTree:
         y.right = node
         node.p = y
 
-    def left_rotation(self,x):
+    def right_rotation_value(self,x):
         node = self.search(x)
+        self.right_rotation(node)
+
+    def left_rotation(self,node):
         if node is None:
             return
         y = node.right
@@ -152,6 +154,10 @@ class RBTree:
             y.left.p = node
         y.left = node
         node.p = y
+
+    def left_rotation_value(self,x):
+        node = self.search(x)
+        self.left_rotation(node)
 
 if __name__ == '__main__':
     array = [[7, 'black', 1,2], [3,'black',None,None], [18,'red',3,4], [10,'black',5,6], [22,'black',None,7], [8,'red',None,None], [11,'red',None,None], [26,'red',None,None]]
