@@ -32,6 +32,7 @@ class RBTree:
             right.p = node
         else:
             node.right = self.nil
+        node.p = self.nil
         return node
 
     def build_rbtree(self,array):
@@ -90,10 +91,54 @@ class RBTree:
         else:
             y.right = node
         node.p = y
-        self.rb_insert_fixup(node)
+        self.rb_update_fixup(node)
 
-    def rb_insert_fixup(self,node):
-                return
+    def rb_update_fixup(self,x):
+        node = x
+        while node != self.root and node.p.color == 'red':
+            self.level_travelsal()
+            grand = node.p.p
+            if grand == self.nil:
+                break
+            if grand.left == node.p:
+                uncle = grand.right
+                if uncle != self.nil and uncle.color == 'red':
+                    # case 1: uncle is red then: grand = red, parent & uncle = black, node = grand
+                    grand.color = 'red'
+                    uncle.color = 'black'
+                    node.p.color = 'black'
+                    node = grand
+                else:
+                    if node.p.right == node:
+                        # case 2: different side then: rotate parent-node, node = original parent
+                        # rotate-direction: right child then parent left rotate, original parent is new left child
+                        self.left_rotation(node.p)
+                        node = node.left
+                    # cace 3: same side then: rotate grand-parent, grand = red, parent = black
+                    self.right_rotation(grand)
+                    grand.color = 'red'
+                    node.p.color = 'black'
+            else:
+                # the other direction: swap all the right and left
+                uncle = grand.left
+                if uncle != self.nil and uncle.color == 'red':
+                    # case 1: uncle is red then: grand = red, parent & uncle = black, node = grand
+                    grand.color = 'red'
+                    uncle.color = 'black'
+                    node.p.color = 'black'
+                    node = grand
+                else:
+                    if node.p.left == node:
+                        # case 2: different side then: rotate parent-node, node = original parent
+                        # rotate-direction: left child then parent right rotate, original parent is new right child
+                        self.right_rotation(node.p)
+                        node = node.right
+                    # cace 3: same side then: rotate grand-parent, grand = red, parent = black
+                    self.left_rotation(grand)
+                    grand.color = 'red'
+                    node.p.color = 'black'
+        self.root.color = 'black'
+        return
 
     def exch(self,num,i,j):
         t = num[i]
@@ -117,7 +162,7 @@ class RBTree:
         y = node.left
         if y is None:
             return
-        if node.p is None:
+        if node.p == self.nil:
             self.root = y
         else:
             y.p = node.p
@@ -141,7 +186,7 @@ class RBTree:
         y = node.right
         if y is None:
             return
-        if node.p is None:
+        if node.p == self.nil:
             self.root = y
         else:
             y.p = node.p
@@ -162,6 +207,8 @@ class RBTree:
 if __name__ == '__main__':
     array = [[7, 'black', 1,2], [3,'black',None,None], [18,'red',3,4], [10,'black',5,6], [22,'black',None,7], [8,'red',None,None], [11,'red',None,None], [26,'red',None,None]]
     rb = RBTree(array=array)
-    rb.rb_insert(6)
+    rb.level_travelsal()
+    rb.rb_insert(15)
+    print('tree after rb insert 15:')
     rb.level_travelsal()
     rb.sorted_traversal()
