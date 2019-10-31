@@ -78,6 +78,16 @@ class RBTree:
         for e in num:
             self.rb_insert(e)
 
+    def rb_transplant(self, original, update):  # transplant update replace to original
+        if original.p == self.nil:
+            self.root = update
+        elif original.p.left == original:
+            original.p.left = update
+        else:
+            original.p.right = update
+        if update != self.nil:
+            update.p = original.p
+
     def rb_insert(self,z):
         node = Node(z,color='red',left=self.nil,right=self.nil,parent=self.nil)
         if self.root is None:
