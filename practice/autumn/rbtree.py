@@ -78,15 +78,88 @@ class RBTree:
         for e in num:
             self.rb_insert(e)
 
-    def rb_transplant(self, original, update):  # transplant update replace to original
-        if original.p == self.nil:
-            self.root = update
-        elif original.p.left == original:
-            original.p.left = update
+    def rb_transplant(self, u, v):  # transplant v replace to u
+        if u.p == self.nil:
+            self.root = v
+        elif u.p.left == u:
+            u.p.left = v
         else:
-            original.p.right = update
-        if update != self.nil:
-            update.p = original.p
+            u.p.right = v
+        if v != self.nil:
+            v.p = u.p
+
+    def rb_delete(self,z):
+        node = self.search(z)
+        if node == self.nil:
+            return
+        y = node
+        yoc = y.color
+        x = node.left
+        if node.left == self.nil or node.right == self.nil:
+            if node.left == self.nil:
+                x = node.right
+            if node.p == self.nil:
+                self.root = x
+            elif node.p.left == node:
+                node.p.left = x
+            else:
+                node.p.right = x
+            x.p = node.p
+            x.color = yoc
+        else:
+            y = self.successor(node)
+            yoc = y.color
+            x = y.right
+            if y != node.right:
+                self.rb_transplant(y,x)
+                y.right = node.right
+                node.right.p = y
+            self.rb_transplant(node, y)
+            y.left = node.left
+            node.left.p = y
+            y.color = node.color
+        if yoc == 'black':
+            self.rb_delete_fixup(x)  # x.color = black2 or red-black : x.color + black
+        self.root.p = self.nil
+        self.root.color = 'black'
+
+    def rb_delete_fixup(self,x):
+        while x != self.root and x.color == 'black':
+            print('$',x.key,x.color)
+        x.color = 'black'
+        return
+
+    def leftest(self,node):
+        p = node
+        while True:
+            if p.left == self.nil:
+                return p
+            p = p.left
+
+    def successor(self,node):
+        if node == self.nil:
+            return self.nil
+        parent = node.p
+        if node.right != self.nil:  # has right: leftest of right child
+            return self.leftest(node.right)
+        else:
+            child = node
+            p = parent
+            while p != self.nil and p.right == child:   # nearest left root
+                child = p
+                p = p.p
+            return p
+
+    def search(self,x):
+        p = self.root
+        while p != self.nil:
+            if x < p.key:
+                p = p.left
+            elif x > p.key :
+                p = p.right
+            else:
+                return p
+        return self.nil
 
     def rb_insert(self,z):
         node = Node(z,color='red',left=self.nil,right=self.nil,parent=self.nil)
@@ -109,11 +182,11 @@ class RBTree:
         node.p = y
         self.rb_insert_fixup(node)
 
-    def rb_insert_fixup(self,x):
-        node = x
+    def rb_insert_fixup(self,po):
+        node = po
         # to let the violation go up the tree
         while node != self.root and node.p.color == 'red':
-            self.level_travelsal()
+            # self.level_travelsal()
             grand = node.p.p
             if grand == self.nil:
                 break
@@ -227,15 +300,18 @@ class RBTree:
         self.left_rotation(node)
 
 if __name__ == '__main__':
+    num = [23, 6, 16, 41, 38, 31, 12, 19, 8, 2, 56, 7, 34, 100]
+    rbt = RBTree()
+    rbt.build(num)
+    rbt.level_travelsal()
+    rbt.sorted_traversal()
     array = [[7, 'black', 1,2], [3,'black',None,None], [18,'red',3,4], [10,'black',5,6], [22,'black',None,7], [8,'red',None,None], [11,'red',None,None], [26,'red',None,None]]
     rb = RBTree()
     rb.root = rb.build_rbtree(array)
     rb.level_travelsal()
     rb.rb_insert(15)
-    print('tree after rb insert 15:')
     rb.level_travelsal()
-    rb.sorted_traversal()
-    num = [41,38,31,12,19,8]
-    rbt = RBTree()
-    rbt.build(num)
-    rbt.level_travelsal()
+    rb.rb_delete(18)
+    rb.level_travelsal()
+
+
