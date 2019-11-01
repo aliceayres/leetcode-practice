@@ -123,11 +123,52 @@ class RBTree:
         self.root.p = self.nil
         self.root.color = 'black'
 
-    def rb_delete_fixup(self,x):
+    def rb_delete_fixup(self,node):
+        x = node
+        # must be: x.p !== self.nil
         while x != self.root and x.color == 'black':
-            print('$',x.key,x.color)
+            if x.p.left == x:
+                w = x.p.right
+                if w.color == 'red':  # must be: w !== self.nil
+                    w.color = 'black'
+                    x.p.color = 'red'
+                    self.left_rotation(x.p)
+                else:
+                    if w.left.color == 'black' and w.right.color == 'black':
+                        w.color = 'red'
+                        x = x.p
+                    else:
+                        if w.left.color == 'red' and w.right.color == 'black':
+                            w.color = 'red'
+                            w.left.color = 'black'
+                            self.right_rotation(w)
+                        w.color = x.p.color
+                        x.p.color = 'black'
+                        w.right.color = 'black'
+                        self.left_rotation(x.p)
+                        x = self.root
+            else:
+                # swap
+                w = x.p.left
+                if w.color == 'red':  # must be: w !== self.nil
+                    w.color = 'black'
+                    x.p.color = 'red'
+                    self.right_rotation(x.p)
+                else:
+                    if w.left.color == 'black' and w.right.color == 'black':
+                        w.color = 'red'
+                        x = x.p
+                    else:
+                        if w.right.color == 'red' and w.left.color == 'black':
+                            w.color = 'red'
+                            w.right.color = 'black'
+                            self.left_rotation(w)
+                        w.color = x.p.color
+                        x.p.color = 'black'
+                        w.left.color = 'black'
+                        self.right_rotation(x.p)
+                        x = self.root
         x.color = 'black'
-        return
 
     def leftest(self,node):
         p = node
@@ -252,10 +293,10 @@ class RBTree:
         return None
 
     def right_rotation(self,node):
-        if node is None:
+        if node == self.nil:
             return
         y = node.left
-        if y is None:
+        if y == self.nil:
             return
         if node.p == self.nil:
             self.root = y
@@ -266,20 +307,16 @@ class RBTree:
             else:
                 node.p.right = y
         node.left = y.right
-        if y.right is not None:
+        if y.right != self.nil:
             y.right.p = node
         y.right = node
         node.p = y
 
-    def right_rotation_value(self,x):
-        node = self.search(x)
-        self.right_rotation(node)
-
     def left_rotation(self,node):
-        if node is None:
+        if node == self.nil:
             return
         y = node.right
-        if y is None:
+        if y == self.nil:
             return
         if node.p == self.nil:
             self.root = y
@@ -290,21 +327,20 @@ class RBTree:
             else:
                 node.p.right = y
         node.right = y.left
-        if y.left is not None:
+        if y.left != self.nil:
             y.left.p = node
         y.left = node
         node.p = y
-
-    def left_rotation_value(self,x):
-        node = self.search(x)
-        self.left_rotation(node)
 
 if __name__ == '__main__':
     num = [23, 6, 16, 41, 38, 31, 12, 19, 8, 2, 56, 7, 34, 100]
     rbt = RBTree()
     rbt.build(num)
     rbt.level_travelsal()
+    rbt.rb_delete(38)
+    rbt.level_travelsal()
     rbt.sorted_traversal()
+    '''
     array = [[7, 'black', 1,2], [3,'black',None,None], [18,'red',3,4], [10,'black',5,6], [22,'black',None,7], [8,'red',None,None], [11,'red',None,None], [26,'red',None,None]]
     rb = RBTree()
     rb.root = rb.build_rbtree(array)
@@ -313,5 +349,6 @@ if __name__ == '__main__':
     rb.level_travelsal()
     rb.rb_delete(18)
     rb.level_travelsal()
+    '''
 
 
