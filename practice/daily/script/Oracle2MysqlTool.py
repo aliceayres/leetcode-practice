@@ -11,7 +11,7 @@ class OracleHelper:
     def __init__(self):
         self.charset='utf8'
         try:
-            self.conn = cx_Oracle.connect('idc/ctsig2018@192.168.8.128:1521/orcl1')
+            self.conn = cx_Oracle.connect('idc/111111@192.168.8.128:1521/orcl1')
             self.cur=self.conn.cursor()
         except cx_Oracle.Error as e:
             print(e)
