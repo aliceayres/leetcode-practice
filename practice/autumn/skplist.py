@@ -1,6 +1,6 @@
 '''
 Skiplist 跳表
-Skiplist 1 : head & tail must be in Level highest & level = lgn
+Skiplist 1 : head & tail must be in Level highest & best level = lgn
 Skiplist 2 : head must be in level highest
 Skiplist 3 : restruct node, array to store level point
 '''
@@ -29,7 +29,7 @@ class Skiplist:
         return random.randint(1,100) > 50
 
     def insert(self,x):
-        print('insert:',x)
+        print('insert:', x)
         prev = self.search_insert(x)
         if self.header is None: # skip list is empty, to initialize
             node = Node(x)
@@ -39,12 +39,16 @@ class Skiplist:
             self.level = self.bestlevel()
             return
         if prev is None: # insert head
-            key = self.replace_up_level(self.base,x)
-            self.insert(key)
+            original = self.base.key
+            self.replace_up_level(self.base,x)
+            self.traversal()
+            self.insert(original)
             return
         if prev.next is None: # insert tail
-            key = self.replace_up_level(prev,x)
-            self.insert(key)
+            original = prev.key
+            self.replace_up_level(prev,x)
+            self.traversal()
+            self.insert(original)
             return
         node = Node(x)
         self.count += 1
@@ -52,8 +56,9 @@ class Skiplist:
         up_level = self.bestlevel()
         cnt = 1
         while self.willup() is True and cnt <= up_level:
+            print(cnt,self.level,up_level)
             p = prev
-            if cnt == up_level > self.level and  up_level:
+            if cnt == up_level and up_level > self.level:  # level will up
                 h = Node(self.header.key)
                 h.down = self.header
                 self.header.up = h
@@ -70,12 +75,13 @@ class Skiplist:
                 self.header = h
                 self.level += 1
             else:
-                while p.up is None:
+                while p is not None and p.up is None:
                     p = p.prev
                 up_node = Node(x)
                 up_node.down = node
                 node.up = up_node
-                self.link(p.up,up_node)
+                if p is not None:
+                    self.link(p.up,up_node)
                 node = up_node
                 prev = up_node.prev
             cnt += 1
@@ -83,18 +89,18 @@ class Skiplist:
 
     def link(self,prev,node):
         node.next = prev.next
-        prev.next.prev = node
+        if prev.next is not None:
+            prev.next.prev = node
         prev.next = node
         node.prev = prev
         return
 
     def replace_up_level(self,original,x):
-        key = original.key
         p = original
         while p is not None:
             p.key = x
             p = p.up
-        return key
+        return
 
     def delete(self,x):
         return
@@ -170,20 +176,23 @@ class Skiplist:
 
     def traversal(self):
         p = self.header
+        i = 1
         while p is not None:
+            print('level %d = '% i, end=' ')
             node = p
             while node is not None:
                 print(node.key,end=' ')
                 node = node.next
             print()
             p = p.down
+            i += 1
 
 if __name__ == '__main__':
     sl = Skiplist()
-    num = [14,23,34,42,50,59,66,80,92,100]
+    num = [14,23,34,80,92,100]
     sl.build(num)
     sl.traversal()
-    add = [16,49,72,12,180,78]
+    add = [42,50,59,66,16,49,72,12,180,78]
     for e in add:
         sl.insert(e)
         sl.traversal()
