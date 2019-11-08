@@ -71,6 +71,8 @@ class Skiplist:
                 h.next = t
                 t.prev = h
                 nd = Node(x)
+                nd.down = node
+                node.up = nd
                 self.link(h,nd)
                 self.header = h
                 self.level += 1
