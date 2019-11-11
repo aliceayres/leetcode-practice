@@ -1,8 +1,6 @@
 '''
-Skiplist 跳表
-Skiplist 1 : head & tail must be in Level highest & best level = lgn
-Skiplist 2 : head must be in level highest
-Skiplist 3 : restruct node, array to store level point
+Skiplist 跳表(理想不必要)
+Skiplist limit: head & tail must be in Level highest & best level = lgn
 '''
 import random
 import math
@@ -15,6 +13,10 @@ class Node:
         self.up = None
         self.down = None
 
+def randomHalf():
+    return random.randint(1, 100) > 50
+
+# Skiplist 1 : head & tail must be in Level highest & best level = lgn
 class Skiplist:
     def __init__(self):
         self.header = None
@@ -24,9 +26,6 @@ class Skiplist:
 
     def bestlevel(self):
         return math.floor(math.log(self.count,2))+1
-
-    def willup(self):
-        return random.randint(1,100) > 50
 
     def insert(self,x):
         print('insert:', x)
@@ -55,7 +54,7 @@ class Skiplist:
         self.link(prev,node)
         up_level = self.bestlevel()
         cnt = 1
-        while self.willup() is True and cnt <= up_level:
+        while randomHalf() is True and cnt <= up_level:
             print(cnt,self.level,up_level)
             p = prev
             if cnt == up_level and up_level > self.level:  # level will up
@@ -191,14 +190,14 @@ class Skiplist:
 
 if __name__ == '__main__':
     sl = Skiplist()
+    sl.traversal()
     num = [14,23,34,80,92,100]
     sl.build(num)
     sl.traversal()
     add = [42,50,59,66,16,49,72,12,180,78]
     for e in add:
         sl.insert(e)
-        sl.traversal()
-    print(sl.count)
+    sl.traversal()
     node = sl.search(42) # 42 12 99 190
     if node is not None:
         print(node.key,node.down)
@@ -214,7 +213,3 @@ if __name__ == '__main__':
     node = sl.search_insert(198)  # 12 198
     if node is not None:
         print(node.key, node.down)
-    print(sl.willup())
-
-    sl.count = 5
-    print(sl.bestlevel())
