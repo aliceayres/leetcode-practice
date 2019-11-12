@@ -3,6 +3,7 @@ Red-Black Tree 红黑树
 14 Order static tree based on red-black tree 顺序统计树
 os_select 查找具有给定秩的元素（非递归） 14.1-3
 os_rank 确定一个元素的秩
+rank_successor 元素x的第i个后继节点 14.1-5
 '''
 
 class Node:
@@ -36,8 +37,43 @@ class RBTree:
                 k = k - sub
         return None
 
+    def os_select_in_tree(self,root,i):
+        p = root
+        k = i
+        while p != self.nil:
+            sub = p.left.size + 1
+            if sub == k:
+                return p
+            if sub > k:
+                p = p.left
+            else:
+                p = p.right
+                k = k - sub
+        return None
+
+    def rank_successor(self,x,i):
+        node = self.search(x)
+        return self.os_rank_successor(node,i)
+
+    def os_rank_successor(self,node,i):
+        if i == 0:
+            return node
+        if node.right != self.nil:
+            return self.os_select_in_tree(node.right,i)
+        else:
+            p = node
+            pr = node.p
+            while pr != self.nil and pr.left != p:
+                p = pr
+                pr = pr.p
+            if pr.right == self.nil:
+                return None
+            return self.os_rank_successor(pr,i-1)
+
     def os_rank(self,x): # return x's rank in rbtree
         node = self.search(x)
+        if node is None:
+            return
         p = node
         rank = p.left.size + 1
         while p != self.root:
@@ -394,5 +430,7 @@ if __name__ == '__main__':
     print()
     for e in st:
         print(rbt.os_rank_at_search(e), end=' ')
+    print('\nith successor:')
+    print(rbt.rank_successor(12,1).key)
 
 
