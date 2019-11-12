@@ -1,22 +1,54 @@
 '''
 Red-Black Tree 红黑树
-build red-black tree 13.3-2
+14 Order static tree based on red-black tree 顺序统计树
+os_select 查找具有给定秩的元素（非递归） 14.1-3
+os_rank 确定一个元素的秩
 '''
 
 class Node:
-    def __init__(self,key,left=None,right=None,parent=None,color='red',subtree = 1):
+    def __init__(self,key,left=None,right=None,parent=None,color='red',size = 1):
         self.key = key
         self.p = parent
         self.left = left
         self.right = right
         self.color = color
-        self.subtree = subtree
+        self.size = size
         return
 
 class RBTree:
     def __init__(self):
         self.root = None
-        self.nil = Node(None,color='black',subtree = 0)
+        self.nil = Node(None,color='black',size=0)
+
+    def os_select(self,i):  # return ith element in rbtree
+        if i > self.root.size or i < 1:
+            return None
+        p = self.root
+        k = i
+        while p != self.nil:
+            sub = p.left.size + 1
+            if sub == k:
+                return p
+            if sub > k:
+                p = p.left
+            else:
+                p = p.right
+                k = k - sub
+        return None
+
+    def os_rank(self,x): # return x's rank in rbtree
+        node = self.search(x)
+        p = node
+        rank = p.left.size + 1
+        while p != self.root:
+            if p.p.right == p:
+                rank += p.p.left.size + 1
+            p = p.p
+        return rank
+
+    def os_rank_at_search(self,x): # return x's rank in rbtree at search
+        tp = self.search_rank(x)
+        return tp[1]
 
     def level_travelsal(self):
         print('---- level travelsal ----')
@@ -28,7 +60,7 @@ class RBTree:
                 prkey = None
                 if e.p is not None:
                     prkey = e.p.key
-                print('(',e.key,e.color,prkey,e.subtree,')',end=' ')
+                print('(',e.key,e.color,prkey,e.size,')',end=' ')
             print()
             p = level.pop(-1)
             stack = [self.nil]
@@ -46,6 +78,7 @@ class RBTree:
         sorted = []
         self.traversal(self.root,sorted)
         print(sorted)
+        return sorted
 
     def traversal(self,p,sorted):
         if p == self.nil:
@@ -59,7 +92,7 @@ class RBTree:
             self.rb_insert(e)
             # self.level_travelsal()
 
-    def rb_transplant(self, u, v):  # transplant v replace to u, p.subtree = p - u + v
+    def rb_transplant(self, u, v):  # transplant v replace to u, p.size = p - u + v
         if u.p == self.nil:
             self.root = v
         elif u.p.left == u:
@@ -75,9 +108,9 @@ class RBTree:
             return
         pr = node.p
         while pr != self.nil:
-            pr.subtree -= 1
+            pr.size -= 1
             pr = pr.p
-        ons = node.subtree
+        ons = node.size
         y = node
         yoc = y.color
         x = node.left
@@ -100,12 +133,12 @@ class RBTree:
                 self.rb_transplant(y,x)
                 y.right = node.right
                 node.right.p = y
-                node.right.subtree -= 1
+                node.right.size -= 1
             self.rb_transplant(node, y)
             y.left = node.left
             node.left.p = y
             y.color = node.color
-            y.subtree = ons - 1
+            y.size = ons - 1
         if yoc == 'black':
             self.rb_delete_fixup(x)  # x.color = black2 or red-black : x.color + black
         self.root.p = self.nil
@@ -184,11 +217,25 @@ class RBTree:
         while p != self.nil:
             if x < p.key:
                 p = p.left
-            elif x > p.key :
+            elif x > p.key:
                 p = p.right
             else:
                 return p
         return self.nil
+
+    def search_rank(self,x):
+        p = self.root
+        rank = 0
+        while p != self.nil:
+            if x < p.key:
+                p = p.left
+            elif x > p.key:
+                rank += p.left.size + 1
+                p = p.right
+            else:
+                rank += p.left.size + 1
+                return p,rank
+        return self.nil,0
 
     def rb_insert(self,z): # node=insert leaf, y=parent
         node = Node(z,color='red',left=self.nil,right=self.nil,parent=self.nil)
@@ -211,7 +258,7 @@ class RBTree:
         node.p = y
         pr = y
         while pr != self.nil:
-            pr.subtree += 1
+            pr.size += 1
             pr = pr.p
         self.rb_insert_fixup(node)
 
@@ -285,10 +332,10 @@ class RBTree:
         y = node.left
         if y == self.nil:
             return
-        ons = node.subtree
-        node.subtree = node.subtree - y.subtree + y.right.subtree
-        y.subtree = ons
-        print(y.key,y.subtree,node.key,node.subtree)
+        ons = node.size
+        node.size = node.size - y.size + y.right.size
+        y.size = ons
+        print(y.key,y.size,node.key,node.size)
         if node.p == self.nil:
             self.root = y
         else:
@@ -309,10 +356,10 @@ class RBTree:
         y = node.right
         if y == self.nil:
             return
-        ons = node.subtree
-        node.subtree = node.subtree - y.subtree + y.left.subtree
-        y.subtree = ons
-        print(y.key, y.subtree, node.key, node.subtree)
+        ons = node.size
+        node.size = node.size - y.size + y.left.size
+        y.size = ons
+        print(y.key, y.size, node.key, node.size)
         if node.p == self.nil:
             self.root = y
         else:
@@ -334,6 +381,18 @@ if __name__ == '__main__':
     rbt.level_travelsal()
     rbt.rb_delete(38)
     rbt.level_travelsal()
-    rbt.sorted_traversal()
+    st = rbt.sorted_traversal()
+    for i in range(15):
+        e = rbt.os_select(i)
+        if e is None:
+            print('*',end=' ')
+        else:
+            print(e.key,end=' ')
+    print()
+    for e in st:
+        print(rbt.os_rank(e),end=' ')
+    print()
+    for e in st:
+        print(rbt.os_rank_at_search(e), end=' ')
 
 
