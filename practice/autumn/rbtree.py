@@ -105,7 +105,7 @@ class RBTree:
             else:
                 node.p.right = x
             x.p = node.p
-            x.color = yoc
+            # x.color = yoc
         else:
             y = self.successor(node)
             yoc = y.color
