@@ -20,7 +20,7 @@ class Node:
 class RBTree:
     def __init__(self):
         self.root = None
-        self.nil = Node(None,color='black',size=0)
+        self.nil = Node('nil',color='black',size=0)
 
     def os_select(self,i):  # return ith element in rbtree
         if i > self.root.size or i < 1:
@@ -82,7 +82,7 @@ class RBTree:
 
     def os_rank_successor_node_loop(self,nodex,ix):
         node = nodex
-        i = ix
+        i = ix % self.root.size
         while True:
             if i == 0:
                 return node
@@ -196,6 +196,7 @@ class RBTree:
     def rb_transplant(self, u, v):  # transplant v replace to u, p.size = p - u + v
         if u.p == self.nil:
             self.root = v
+            self.root.p = self.nil
         elif u.p.left == u:
             u.p.left = v
         else:
@@ -205,6 +206,9 @@ class RBTree:
 
     def rb_delete(self,z): # node=delete
         node = self.search(z)
+        self.rb_delete_node(node)
+
+    def rb_delete_node(self,node): # node=delete
         if node == self.nil:
             return
         pr = node.p
@@ -220,12 +224,13 @@ class RBTree:
                 x = node.right
             if node.p == self.nil:
                 self.root = x
+                self.root.p = self.nil
             elif node.p.left == node:
                 node.p.left = x
             else:
                 node.p.right = x
             x.p = node.p
-            x.color = yoc
+            # x.color = yoc  # fix bug
         else:
             y = self.successor(node)
             yoc = y.color
@@ -247,6 +252,8 @@ class RBTree:
 
     def rb_delete_fixup(self,node):
         x = node
+        if node == self.nil:
+            return
         # must be: x.p !== self.nil
         while x != self.root and x.color == 'black':
             if x.p.left == x:
@@ -256,6 +263,7 @@ class RBTree:
                     x.p.color = 'red'
                     self.left_rotation(x.p)
                 else:
+                    print(w.key)
                     if w.left.color == 'black' and w.right.color == 'black':
                         w.color = 'red'
                         x = x.p
@@ -352,6 +360,7 @@ class RBTree:
                 x = y.right
         if y == self.nil:
             self.root = node
+            self.root.p = self.nil
         elif node.key <= y.key:
             y.left = node
         else:
@@ -362,6 +371,7 @@ class RBTree:
             pr.size += 1
             pr = pr.p
         self.rb_insert_fixup(node)
+        return node
 
     def rb_insert_fixup(self,po):
         node = po
@@ -436,9 +446,9 @@ class RBTree:
         ons = node.size
         node.size = node.size - y.size + y.right.size
         y.size = ons
-        print(y.key,y.size,node.key,node.size)
         if node.p == self.nil:
             self.root = y
+            self.root.p = self.nil
         else:
             y.p = node.p
             if node.p.left == node:
@@ -460,9 +470,9 @@ class RBTree:
         ons = node.size
         node.size = node.size - y.size + y.left.size
         y.size = ons
-        print(y.key, y.size, node.key, node.size)
         if node.p == self.nil:
             self.root = y
+            self.root.p = self.nil
         else:
             y.p = node.p
             if node.p.left == node:

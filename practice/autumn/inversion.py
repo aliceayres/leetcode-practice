@@ -1,15 +1,25 @@
 '''
 nlgn 计算逆序对数量
 逆序对 : i<j , a[i]>a[j]
+14.1-7 ost 逆序对
 '''
 
 import sys
+from practice.autumn.rbtreesubcnt import RBTree as ost
 
 class Solution:
     def solute(self,num):
         nums = num[0:]
         inversion = self.inversion(nums,0,len(nums)-1)
-        print(nums)
+        return inversion
+
+    def ostree(self,num):
+        tree = ost()
+        inversion = 0
+        for e in num:
+            tree.rb_insert(e)
+            rank = tree.os_rank(e)
+            inversion += (tree.root.size - rank)
         return inversion
 
     def naive(self,num):
@@ -19,7 +29,6 @@ class Solution:
                 if i < j and num[i] > num[j]:
                     sum += 1
         return sum
-
 
     def inversion(self,num,begin,end):
         if begin < end:
@@ -51,8 +60,10 @@ class Solution:
 if __name__ == '__main__':
     slt = Solution()
     num = [2,9,18,4,9,5,6,12]
-    result = slt.solute(num)
-    result2 = slt.naive(num)
-    print(result)
-    print(result2)
+    r1 = slt.solute(num)
+    r2 = slt.naive(num)
+    r3 = slt.ostree(num)
     print(num)
+    print(r1)
+    print(r2)
+    print(r3)

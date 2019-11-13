@@ -1,6 +1,9 @@
 '''
-14-2 Josephus排列 约瑟夫环
+14-2 Josephus排列 约瑟夫环 sohu's shame
+a. m constant → n
+b. m not constant → nlgn by ost
 '''
+from practice.autumn.rbtreesubcnt import RBTree as ost
 
 class Solution:
     def josephus_n(self,n,m):
@@ -18,10 +21,23 @@ class Solution:
             i = (i+1) % n
         return josephus
 
-    def josephus_nlgn(selfn,m):
-        return
+    def josephus_nlgn(self,n,m):
+        tree = ost()
+        josephus = []
+        for i in range(1,n+1):
+            tree.rb_insert(i)
+        tree.level_travelsal()
+        p = tree.search(1);
+        while tree.root != tree.nil:
+            d = tree.os_rank_successor_node_loop(p,m-1)
+            josephus.append(d.key)
+            p = tree.os_rank_successor_node_loop(d,1)
+            tree.rb_delete_node(d)
+        return josephus
 
 if __name__ == '__main__':
     slt = Solution()
-    result = slt.josephus_n(7,3)
-    print(result)     
+    rn = slt.josephus_n(17,13)
+    print(rn)
+    rnlgn = slt.josephus_nlgn(17,13)
+    print(rnlgn)
