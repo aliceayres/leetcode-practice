@@ -3,7 +3,8 @@ Red-Black Tree 红黑树
 14 Order static tree based on red-black tree 顺序统计树
 os_select 查找具有给定秩的元素（非递归） 14.1-3
 os_rank 确定一个元素的秩
-rank_successor 元素x的第i个后继节点 14.1-5
+os_rank_successor 元素x的第i个后继节点 14.1-5 改写非递归时注意i的赋值依赖顺序
+os_rank_successor_node_loop 元素x的第i个循环后继节点 → 可用于约瑟夫环？
 '''
 
 class Node:
@@ -51,24 +52,88 @@ class RBTree:
                 k = k - sub
         return None
 
-    def rank_successor(self,x,i):
+    def os_rank_successor(self,x,i):
         node = self.search(x)
-        return self.os_rank_successor(node,i)
+        return self.os_rank_successor_node_(node,i)
 
-    def os_rank_successor(self,node,i):
+    def os_rank_successor_loop(self,x,i):
+        node = self.search(x)
+        return self.os_rank_successor_node_loop(node,i)
+
+    def find_left_parent_(self,node):
+        if node == self.root:
+            return self.nil
+        p = node
+        pr = node.p
+        while pr != self.root and pr.left != p:
+            p = pr
+            pr = pr.p
+        if pr == self.root and pr.left != p:  # left parent not exist
+            return self.nil
+        return pr
+
+    def find_left_parent(self,node):
+        p = node
+        pr = node.p
+        while pr != self.root and pr.left != p:
+            p = pr
+            pr = pr.p
+        return pr
+
+    def os_rank_successor_node_loop(self,nodex,ix):
+        node = nodex
+        i = ix
+        while True:
+            if i == 0:
+                return node
+            if node.right == self.nil:
+                pr = self.find_left_parent_(node)
+                if pr == self.nil:
+                    k = i % self.root.size
+                    return self.os_select_in_tree(self.root,k)
+                node = pr
+                i = i - 1
+            else:
+                if node.right.size >= i:
+                    return self.os_select_in_tree(node.right,i)
+                else:
+                    pr = self.find_left_parent_(node)
+                    if pr == self.nil:
+                        k = (i - node.right.size) % self.root.size
+                        return self.os_select_in_tree(self.root, k)
+                    i = i - 1 - node.right.size  # before
+                    node = pr
+
+    def os_rank_successor_node_(self,nodex,ix):
+        node = nodex
+        i = ix
+        while True:
+            if i == 0:
+                return node
+            if node.right == self.nil:
+                pr = self.find_left_parent(node)
+                node = pr
+                i = i - 1
+            else:
+                if node.right.size >= i:
+                    return self.os_select_in_tree(node.right,i)
+                else:
+                    i = i - 1 - node.right.size  # before
+                    pr = self.find_left_parent(node)
+                    node = pr
+
+    def os_rank_successor_node(self,node,i):
         if i == 0:
             return node
-        if node.right != self.nil:
-            return self.os_select_in_tree(node.right,i)
+        if node.right == self.nil:
+            pr = self.find_left_parent(node)
+            return self.os_rank_successor_node(pr, i - 1)
         else:
-            p = node
-            pr = node.p
-            while pr != self.nil and pr.left != p:
-                p = pr
-                pr = pr.p
-            if pr.right == self.nil:
-                return None
-            return self.os_rank_successor(pr,i-1)
+            if node.right.size >= i:
+                return self.os_select_in_tree(node.right, i)
+            else:
+                pr = self.find_left_parent(node)
+                return self.os_rank_successor_node(pr, i - 1 - node.right.size)
 
     def os_rank(self,x): # return x's rank in rbtree
         node = self.search(x)
@@ -430,7 +495,25 @@ if __name__ == '__main__':
     print()
     for e in st:
         print(rbt.os_rank_at_search(e), end=' ')
-    print('\nith successor:')
-    print(rbt.rank_successor(12,1).key)
+    print('\n---- os_rank_successor ----', end=' ')
+    rbt.os_rank_successor(2,5)
+    for k in range(len(st)-1):
+        print()
+        print(st[k],":",end =" ")
+        for j in range(1,len(st)-k):
+            scr = rbt.os_rank_successor(st[k],j)
+            print(scr.key,end = ' ')
+    print()
+    # scr = rbt.os_rank_successor_loop(6, 12)
+    # print(scr.key,end = ' ')
+    print('\n---- os_rank_successor_loop ----', end=' ')
+    for k in range(len(st)-1):
+        print()
+        print(st[k],":",end =" ")
+        for j in range(1,len(st)):
+            scr = rbt.os_rank_successor_loop(st[k],j)
+            print(scr.key,end = ' ')
+
+
 
 
