@@ -34,12 +34,12 @@ class Solution:
         k = len(c) - 1
         p = len(scan) - 1
         lcs = ''
-        while k >= 0 and p >= 0:
+        while k >= 0 and p >= 0 and c[k] > 0:
             current_length = c[k]
             if fix[k] == scan[p]:
                 lcs = fix[k] + lcs
                 i = k - 1
-                while c[i] == current_length:
+                while c[i] == current_length > 1:
                     c[i] = c[i] - 1
                     i -= 1
                 p = p - 1
