@@ -3,6 +3,7 @@ oss统计脚本
 '''
 import xlrd
 import os
+import shutil
 
 class Record:
     def __init__(self,row,type,name):
@@ -11,6 +12,8 @@ class Record:
             element = row[i]
             if i == 0:
                 element = str(int(element))
+            if i == 4 and element == '':
+                element = row[5]
             if i == 4 and element == '未通过':
                 element = '不通过'
             self.raw.append(element.replace('\n',''))
@@ -52,17 +55,18 @@ class Analysis:
         file.close()
 
 def tablesFromExcel(dir,filename,name,analysis=None):
+    print(dir+filename)
     workbook = xlrd.open_workbook(dir+filename)
     all_sheets = workbook.sheet_names()
     type = {2:'概要设计',3:'详细设计'}
+    all = []
     if analysis is not None:
         analysis.cache[name] = {2:0,3:0}
-    for k in range(2,4):
+    for k in range(2,3):
         sheet = workbook.sheet_by_name(all_sheets[k])  # workbook.sheet_by_index(1)
         rows = sheet.nrows
         for i in range(1, rows):
             record = Record(sheet.row_values(i), type[k], name)
-            global all
             all.append(record)
             if analysis is not None:
                 if record.raw[4] == '通过':
@@ -84,19 +88,35 @@ def tablesToCsvFile():
         file.write(','.join(record.raw)+'\n')
     file.close()
 
+def prepare_files(from_dir,target):
+    if not os.path.exists(target+'\\dbd'):
+         os.makedirs(target+'\\dbd')
+         os.makedirs(target+'\\ded')
+    for filename in os.listdir(from_dir):
+        db_path = os.path.join(from_dir, filename)+r'\04.设计\数据库结构设计'
+        de_path = os.path.join(from_dir, filename)+r'\04.设计\详细设计说明书'
+        if os.path.exists(db_path):
+            for i in os.listdir(db_path):
+                if i.find('.xlsx') > 0 and i.find('评审记录') > 0:
+                    shutil.copy(db_path+'\\'+i,target+'\\dbd')
+        if os.path.exists(de_path):
+            for i in os.listdir(de_path) :
+                if i.find('.xlsx') > 0 and i.find('评审记录') > 0:
+                    shutil.copy(de_path+'\\'+i, target+'\\ded')
+
 if __name__ == '__main__':
-    ana = Analysis()
-    dir_name = r'C:\Users\CTSIG\Desktop\评审总结呵呵呵\hhh5'
-    list = []
-    for files in os.walk(dir_name):
+    original = r'C:\Users\CTSIG\新建文件夹\ctgnetoss'
+    target = r'C:\Users\CTSIG\Desktop\评审总结呵呵呵'
+    # prepare_files(original,target)
+    de_dir = target+'\\db'
+    de_files = []
+    for files in os.walk(de_dir):
         for file in files[2]:
-            list.append(file)
-    print(list)
-    names = ['DCAE','运营门户','控制器','编排器','动态资源']
-    global all
-    all = []
-    for i in range(len(list)):
-        tablesFromExcel(dir_name+'\\',list[i],names[i],analysis=ana)
-    tablesToCsvFile()
+            de_files.append(file)
+    ana = Analysis()
+    for i in range(len(de_files)):
+        name = de_files[i].replace('CTGNET-OSS ','').replace('CTG Net-OSS ','').replace('系统配套改造评审记录.xlsx','').replace('系统评审记录.xlsx','').replace('数据库评审记录.xlsx','')
+        tablesFromExcel(de_dir+'\\',de_files[i],name,analysis=ana)
+    # tablesToCsvFile()
     ana.analysis()
 
