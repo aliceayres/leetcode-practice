@@ -20,6 +20,10 @@ class Node:
 class DisjointSet:
     @staticmethod
     def make_set(x):
+        '''
+        :param x: data
+        :return: node
+        '''
         node = Node(x)
         djset = LinkedListSet()
         if djset.head is not None:
@@ -34,6 +38,11 @@ class DisjointSet:
 
     @staticmethod
     def union(x,y):
+        '''
+        :param x: node
+        :param y: node
+        :return: node
+        '''
         xset = x.set
         yset = y.set
         if yset.length > xset.length: # weight-union : longer union shorter (x.length >= y.length)
@@ -50,6 +59,12 @@ class DisjointSet:
 
     @staticmethod
     def union_off_tail(x,y):
+        '''
+
+        :param x: node
+        :param y: node
+        :return: node
+        '''
         xset = x.set
         yset = y.set
         if yset.length > xset.length:  # weight-union : longer union shorter (x.length >= y.length)
@@ -68,6 +83,10 @@ class DisjointSet:
 
     @staticmethod
     def find_set(x):
+        '''
+        :param x: node
+        :return: set
+        '''
         return x.set
 
 if __name__ == '__main__':
