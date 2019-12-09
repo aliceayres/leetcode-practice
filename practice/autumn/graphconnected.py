@@ -8,14 +8,10 @@ class Node:
         self.data = data
         self.next = None
 
-class GraphAdj:
-    def __init__(self,adjs):
+class GraphAdjLink:
+    def __init__(self, adjs):
         self.vertices = []
-        self.components = None
-        self.connected = None
         self.generate_adjacency(adjs)
-        self.connected_component()
-        return
 
     def generate_adjacency(self,adjs):
         for vs in adjs:
@@ -37,6 +33,17 @@ class GraphAdj:
                 print(p.data,end=' ')
                 p = p.next
             print()
+
+class Graph:
+    def __init__(self,graph):
+        self.graph = graph
+        self.components = None
+        self.connected = None
+        self.connected_component()
+        return
+
+    def print(self):
+        self.graph.print()
         print('---- graph components ----')
         for item in self.components.items():
             print(item[0],item[1],item[1].set)
@@ -45,10 +52,10 @@ class GraphAdj:
 
     def connected_component(self):
         self.components = {}
-        for vertex in self.vertices:
+        for vertex in self.graph.vertices:
             node = ds.make_set(vertex.data)
             self.components[vertex.data] = node
-        for vertex in self.vertices:
+        for vertex in self.graph.vertices:
             vertexn = self.components[vertex.data]
             p = vertex.next
             while p is not None:
@@ -76,6 +83,7 @@ if __name__ == '__main__':
             ['h', 'i'],
             ['i', 'h'],
             ['j']]
-    graph = GraphAdj(adjs)
+    graph_al = GraphAdjLink(adjs)
+    graph = Graph(graph_al)
     graph.print()
     print(graph.same_component('a','g'))
