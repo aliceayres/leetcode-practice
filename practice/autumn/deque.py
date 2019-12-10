@@ -2,7 +2,6 @@
 Deque 双端队列 10.1-4
 '''
 
-
 class Deque:
     def __init__(self,size):
         self.deque = [None for i in range(size)]

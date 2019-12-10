@@ -2,7 +2,6 @@
 Queue 循环队列 10.1.4
 '''
 
-
 class Queue:
     def __init__(self, size):
         self.queue = [None for i in range(size)]
@@ -23,7 +22,7 @@ class Queue:
 
     def dequeue(self):
         if self.queue[self.top] is None:
-            raise Exception('queue underflow')
+           return None
         head = self.queue[self.top]
         self.queue[self.top] = None
         self.top = (self.top + self.size + 1) % self.size
