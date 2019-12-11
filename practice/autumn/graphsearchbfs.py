@@ -26,6 +26,8 @@ class Search:
         traversal = Search.bfs_source(graph,s)
         mapping = {traversal[i].index:i for i in range(len(traversal))}
         vertex = traversal[mapping[v]]
+        if vertex.s.index != s:
+            return None
         p = vertex
         while p.index != s:
             path.append(p)
@@ -165,6 +167,8 @@ if __name__ == '__main__':
     for t in t4:
         print(t.info())
     print('----')
-    path = Search.get_bfs_path(graph,0,5)
+    path = Search.get_bfs_path(graph,0,4)
+    if path is None:
+        print('cannot arrived')
     for t in path:
         print(t.info())
