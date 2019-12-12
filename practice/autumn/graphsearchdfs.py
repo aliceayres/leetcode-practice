@@ -14,6 +14,7 @@ class Node:
         self.f = None
         self.p = None
         self.color = 'white'
+        self.adj = None # maintain next check adjacency
 
     def info(self):
         return format('[data=%s,index=%s,d=%s,f=%s,p=%s,color=%s]' % (self.data,self.index,self.d,self.f,self.p.data,self.color))
@@ -36,22 +37,25 @@ class DepthFirstGraph:
                 node.color = 'grey'
                 if node.p is None:
                     node.p = node
+                node.adj = graph.vertices[node.index].next
                 stack.push(node)
                 self.traversal.append(node)
                 self.parantheses += '(' + node.data
             while stack.stack_empty() is not True:
                 # find in top's adjacency
                 node = stack.get_top()
-                p = graph.vertices[node.index].next
+                p = node.adj
                 find = None
                 while p is not None:
                     if self.nodes[p.index].color == 'white':
                         find = self.nodes[p.index]
+                        node.adj = p.next
                         break
                     p = p.next
                 if find is None:
                     # cannot find a white in adjacency → pop
                     stack.pop()
+                    self.time += 1
                     node.f = self.time
                     self.parantheses += ')'
                     node.color = 'black'
@@ -61,6 +65,7 @@ class DepthFirstGraph:
                     self.time += 1
                     find.d = self.time
                     find.color = 'grey'
+                    find.adj = graph.vertices[find.index].next
                     stack.push(find)
                     self.traversal.append(find)
                     self.parantheses += '(' + find.data
@@ -84,6 +89,7 @@ class DepthFirstGraph:
                 self.nodes[p.index].p = node
                 self.dfs_visit(self.nodes[p.index])
             p = p.next
+        self.time += 1
         node.f = self.time
         self.parantheses += ')'
         node.color = 'black'

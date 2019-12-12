@@ -70,6 +70,20 @@ class Solution:
         return Solution.multi_undirgraph(Gl(vertices))
 
     @staticmethod
+    def undirgraph_single(graph):
+        for i in range(len(graph.vertices)):
+            head = graph.vertices[i]
+            prev = head
+            p = head.next
+            while p is not None:
+                if p.index < head.index:
+                    # delete p
+                    prev.next = p.next
+                else:
+                    prev = p
+                p = p.next
+
+    @staticmethod
     def squre_graph_matrix(graph):
         matrix = []
         for i in range(len(graph.matrix)):

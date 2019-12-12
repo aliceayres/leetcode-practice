@@ -7,94 +7,38 @@ based on disjoint set forest
 from practice.autumn.graphconnected import Graph as G
 from practice.autumn.graphmultigraph import Solution as S
 from practice.autumn.prioritymin import PriorityQueue as Q
-from practice.autumn.prioritymin import Node as N
+from practice.autumn.prioritymin import Node as QN
 from practice.autumn.disjointsetforest import DisjointSet as DS
-from practice.autumn.disjointsetforest import ForestNode as FN
 
-import sys
-
-class SimpleQ():
-    def __init__(self):
-        self.queue = []
-
-    def empty(self):
-        return len(self.queue) == 0
-
-    def insert(self,x): # o(1)
-        x.index = len(self.queue)
-        self.queue.append(x)
-        return
-
-    def decrease_key(self,x,k): # o(1)
-        self.queue[x.index].priority = k
-        return
-
-    def exch(self, queue, i, j):
-        t = queue[i]
-        queue[i] = queue[j]
-        queue[j] = t
-        ix = queue[i].index
-        queue[i].index = queue[j].index
-        queue[j].index = ix
-
-    def extract_min(self): # o(n)
-        min = self.queue[0]
-        index = 0
-        for i in range(1,len(self.queue)):
-            if self.queue[i].priority < min.priority:
-                min = self.queue[i]
-                index = i
-        self.exch(self.queue,index,-1)
-        self.queue.pop(-1)
-        return min
-
-class Node:
-    def __init__(self,data,index):
-        self.data = data
-        self.index = index
-        self.d = 0
-        self.p = None
+class Edge:
+    def __init__(self,u,udata,v,vdata,weight):
+        self.u = u
+        self.udata = udata
+        self.v = v
+        self.vdata = vdata
+        self.weight = weight
 
     def info(self):
-        return format('[data=%s,index=%d,d=%d,p=%s]' % (self.data,self.index,self.d,self.p.data))
+        return format('[%s→%s=%d]' % (self.udata,self.vdata,self.weight))
 
 class MST:
     @staticmethod
-    def prim(graph,s):
-        traversal = []
-        cache = {}
-        # queue = SimpleQ()
+    def kruskal(graph): # graph is represented as undir-single graph
+        mst = []
+        sets = [DS.make_set(node) for node in graph.vertices]
         queue = Q()
-        nodes = [Node(vtx.data, vtx.index) for vtx in graph.vertices]
-        source = nodes[s]
-        for i in range(len(nodes)):
-            if i != s:
-                nodes[i].d = sys.maxsize
-            else:
-                nodes[i].d = 0
-                nodes[i].p = nodes[i]
-            nodes[i].s = source
-            qn = N(nodes[i], nodes[i].d)
-            cache[nodes[i].index] = qn
-            queue.insert(qn)
-        # queue.print_queue()
-        while queue.empty() is not True:
-            min = queue.extract_min()
-            # queue.print_queue()
-            node = min.data
-            traversal.append(node)
-            cache[node.index] = None
-            p = graph.vertices[node.index].next
+        for head in graph.vertices:
+            p = head.next
             while p is not None:
-                un = cache[p.index]
-                if un is not None: # still in queue
-                    if un.data.d > p.weight:  # relax
-                        un.data.d = p.weight
-                        un.data.p = node
-                        queue.decrease_key(un,un.data.d)
-                    # queue.print_queue()
+                e = Edge(head.index,head.data,p.index,p.data,p.weight)
+                queue.insert(QN(e,p.weight))
                 p = p.next
-        return traversal
+        while queue.empty() is not True:
+            mine = queue.extract_min().data
+            if DS.find_set(sets[mine.u]) != DS.find_set(sets[mine.v]):
+                DS.union(sets[mine.u],sets[mine.v])
+                mst.append(mine)
+        return mst
 
 if __name__ == '__main__':
     adjs = [[('a', 0), ('b', 4), ('h', 8)],
@@ -110,7 +54,9 @@ if __name__ == '__main__':
     graph.print()
     undir = S.directed_undirgraph(graph)
     undir.print()
+    S.undirgraph_single(undir)
+    undir.print()
     print('----')
-    tr = MST.prim(undir,0)
+    tr = MST.kruskal(undir)
     for t in tr:
-        print(t.p.data,t.data,t.d)
+        print(t.info())
