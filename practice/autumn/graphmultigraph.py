@@ -3,6 +3,7 @@ Equivalent (simple) undirected graph of Multigraph o(v+e) 多图的等价简单�
 delete repeated element from linked list o(n)
 Square of directed graph 平方图（链表、矩阵） 22.1-5
 Universal sink (in-degree = |v|-1 and out-degree = 0) 图的矩阵通用汇点 o(v)  22.1-6
+Directed to undirected graph 有向图转无向图
 '''
 from practice.autumn.graphconnected import Node
 from practice.autumn.graphconnected import GraphAdjLink as Gl
@@ -37,7 +38,7 @@ class Solution:
                 return None
 
     @staticmethod
-    def equivalent_undirgraph(multi):
+    def multi_undirgraph(multi):
         vertices = multi.vertices
         for head in vertices:  # |v|
             cache = {}
@@ -52,6 +53,21 @@ class Solution:
                     pre = p
                     p = p.next
         return Gl(vertices)
+
+    @staticmethod
+    def directed_undirgraph(graph):
+        vertices = [p for p in graph.vertices]
+        for i in range(len(graph.vertices)):
+            head = graph.vertices[i]
+            p = head.next
+            while p is not None:
+                t = graph.vertices[p.index].next
+                pre = vertices[p.index]
+                node = Node(head.data, head.index, p.weight)
+                node.next = pre.next
+                pre.next = node
+                p = p.next
+        return Solution.multi_undirgraph(Gl(vertices))
 
     @staticmethod
     def squre_graph_matrix(graph):
@@ -82,7 +98,7 @@ class Solution:
                     t = t.next
                     pre = node # insert by tail
                 p = p.next
-        return  Solution.equivalent_undirgraph(Gl(vertices))
+        return  Solution.multi_undirgraph(Gl(vertices))
 
 if __name__ == '__main__':
     adjs = [[('a', 0), ('c', 1), ('b', 1), ('a', 0), ('b', 1)],
@@ -93,7 +109,7 @@ if __name__ == '__main__':
             [('f', 0), ('f', 0)]]
     multi = G.generate_adjacency(adjs)
     multi.print()
-    result = Solution.equivalent_undirgraph(multi)
+    result = Solution.multi_undirgraph(multi)
     result.print()
     square = Solution.square_graph(result)
     square.print()

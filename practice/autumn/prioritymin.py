@@ -9,7 +9,7 @@ class Node:
     def __init__(self,data,priority):
         self.data = data
         self.priority = priority
-        self.index = 0  # relative index
+        self.index = 0
 
     def __str__(self):
         return format('data=%s,priority=%d,index=%d' % (self.data,self.priority,self.index))
@@ -19,9 +19,13 @@ class PriorityQueue:
         self.queue = []
         self.heap = hp.Heap()
 
+    def empty(self):
+        return len(self.queue) == 0
+
     def print_queue(self):
+        print('---- queue ----')
         for e in self.queue:
-            print(e)
+            print(e.data.data,e.priority,e.index)
 
     def insert(self,x):
         k = x.priority
