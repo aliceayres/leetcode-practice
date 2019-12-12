@@ -23,11 +23,16 @@ class Stack:
 
     def pop(self):
         if self.stack_empty():
-            raise Exception("stack underflow")
+           return None
         e = self.stack[self.top]
         self.stack[self.top] = None
         self.top -= 1
         return e
+
+    def get_top(self):
+        if self.stack_empty():
+           return None
+        return self.stack[self.top]
 
 if __name__ == '__main__':
     stack = Stack(10)
