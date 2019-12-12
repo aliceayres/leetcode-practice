@@ -40,6 +40,7 @@ class DepthFirstGraph:
                 self.traversal.append(node)
                 self.parantheses += '(' + node.data
             while stack.stack_empty() is not True:
+                # find in top's adjacency
                 node = stack.get_top()
                 p = graph.vertices[node.index].next
                 find = None
@@ -49,11 +50,13 @@ class DepthFirstGraph:
                         break
                     p = p.next
                 if find is None:
+                    # cannot find a white in adjacency → pop
                     stack.pop()
                     node.f = self.time
                     self.parantheses += ')'
                     node.color = 'black'
                 else:
+                    # first white → push
                     find.p = node
                     self.time += 1
                     find.d = self.time
